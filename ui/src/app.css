@@ -1,0 +1,34 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+svg,
+img {
+  display: block;
+}
+
+:root {
+  --s-none: 0;
+  --s-xxs: 2px;
+  --s-xs: 4px;
+  --s-xsp: 6px;
+  --s-sm: 8px;
+  --s-smp: 12px;
+  --s-md: 16px;
+  --s-mdp: 24px;
+  --s-lg: 32px;
+  --s-lgp: 48px;
+  --s-xl: 64px;
+  --s-xlp: 96px;
+  --s-xxl: 128px;
+}
+
+html {
+  color-scheme: dark;
+  font-family: -apple-system, "Segoe UI", "Roboto", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 15px;
+  background: #000;
+  color: #fff;
+}

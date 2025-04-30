@@ -1,0 +1,6 @@
+/.idea
+/cmake-build-debug
+/external/emsdk
+/ui/src/assets/core.d.ts
+/ui/src/assets/core.mjs
+/ui/src/assets/core.wasm
