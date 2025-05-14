@@ -1,4 +1,5 @@
 <script lang="ts">
+  import NodeToolbar from "./NodeToolbar.svelte";
   import { store } from "./store";
 
   const nodeType = $derived($store.nodeTypes.find(nt => nt.name === $store.editing?.name));
@@ -16,49 +17,73 @@
   }
 </script>
 
-<div class="node-edit">
-  {#if $store.editing}
-    <div class="header">
-      <div class="node-name">{nodeType?.title}</div>
-      <button type="button" onclick={duplicateNode}>Duplicate</button>
-    </div>
-    {#each $store.editing.params as param, p_i (p_i)}
-      <div class="param">
-        <div class="param-name">{param.name}</div>
-        <div class="param-value">
-          <input
-            type="range"
-            bind:value={param.value}
-            min={param.min}
-            max={param.max}
-            step="1"
-          />
-          <input
-            type="number"
-            bind:value={param.value}
-            min={param.min}
-            max={param.max}
-            step="1"
-          />
+<div class="node-edit" class:editing={$store.editing}>
+  <div class="node-toolbar-area">
+    <NodeToolbar></NodeToolbar>
+  </div>
+  <div class="node-edit-area">
+    <div class="node-params">
+      {#if $store.editing}
+        <div class="header">
+          <div class="node-name">{nodeType?.title}</div>
+          <button type="button" onclick={duplicateNode}>Duplicate</button>
         </div>
-      </div>
-    {/each}
-    <div class="bottom-toolbar">
-      <button type="button" onclick={deleteNode}>Delete</button>
+        {#each $store.editing.params as param, p_i (p_i)}
+          <div class="param">
+            <div class="param-name">{param.name}</div>
+            <div class="param-value">
+              <input
+                type="range"
+                bind:value={param.value}
+                min={param.min}
+                max={param.max}
+                step="1"
+              />
+              <input
+                type="number"
+                bind:value={param.value}
+                min={param.min}
+                max={param.max}
+                step="1"
+              />
+            </div>
+          </div>
+        {/each}
+        <div class="bottom-toolbar">
+          <button type="button" onclick={deleteNode}>Delete</button>
+        </div>
+      {:else}
+        <div>Select a node to edit parameters</div>
+      {/if}
     </div>
-  {:else}
-    <div>Select a node to edit parameters</div>
-  {/if}
+  </div>
 </div>
 
 <style>
   .node-edit {
+    @media (max-width: 999px) {
+      &.editing .node-toolbar-area,
+      &:not(.editing) .node-edit-area {
+        display: none;
+      }
+    }
+
+    @media (min-width: 1000px) {
+      display: grid;
+      grid-template-columns: 1fr 500px;
+    }
+
+    .node-toolbar-area,
+    .node-edit-area {
+      min-width: 0;
+    }
+  }
+
+  .node-params {
     display: flex;
     flex-direction: column;
-    gap: var(--s-md);
+    gap: var(--s-sm);
     padding: var(--s-md);
-    overflow-y: auto;
-    height: 100%;
 
     .header,
     .bottom-toolbar {
@@ -66,15 +91,6 @@
         flex: 0 0 auto;
         padding: 0 var(--s-md);
         height: var(--s-lg);
-        font-size: 13px;
-        border: none;
-        cursor: pointer;
-        color: #fff;
-        background: #222;
-
-        &:hover {
-          background: #333;
-        }
       }
     }
 

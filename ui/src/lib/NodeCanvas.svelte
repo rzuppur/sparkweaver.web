@@ -30,6 +30,7 @@
   const mixNodes = $derived($store.nodes.filter(n => n.name.startsWith("Mx")));
   const destinationNodes = $derived($store.nodes.filter(n => n.name.startsWith("Ds")));
 
+  const lineOpacity = $derived($store.editing ? 0.1 : 0.3);
   const selectedUid = $derived($store.editing?.uid);
 
   function isSelected(line: [number, number, string]): boolean {
@@ -52,7 +53,7 @@
           stroke={isSelected(line) ? "#fb6" : "#b84"}
           stroke-width="4"
           stroke-linecap="round"
-          opacity={isSelected(line) ? 0.9 : 0.25}
+          opacity={isSelected(line) ? 0.9 : lineOpacity}
         ></path>
       {/each}
       {#each node.triggerLines as line, tl_i (tl_i)}
@@ -62,7 +63,7 @@
           stroke={isSelected(line) ? "#FFF" : "#888"}
           stroke-width="4"
           stroke-linecap="round"
-          opacity={isSelected(line) ? 0.9 : 0.25}
+          opacity={isSelected(line) ? 0.9 : lineOpacity}
         ></path>
       {/each}
     {/each}

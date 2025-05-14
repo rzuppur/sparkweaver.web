@@ -17,6 +17,9 @@ export default ts.config(
     languageOptions: {
       globals: {
         ...globals.browser, ...globals.node,
+        BluetoothDevice: "readonly",
+        BluetoothRemoteGATTCharacteristic: "readonly",
+        BluetoothRemoteGATTService: "readonly",
       },
     },
   },

@@ -32,3 +32,24 @@ html {
   background: #000;
   color: #fff;
 }
+
+button {
+  font-size: 13px;
+  border: none;
+  color: #fff;
+  background: #222;
+  white-space: nowrap;
+
+  &:not([disabled]) {
+    cursor: pointer;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: #333;
+  }
+}

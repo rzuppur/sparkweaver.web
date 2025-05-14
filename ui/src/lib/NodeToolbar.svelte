@@ -37,38 +37,23 @@
 <style>
   .toolbar {
     padding: 0 var(--s-md);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-
-    .label {
-      flex: 0 0 auto;
-      margin-right: var(--s-sm);
-      font-weight: bold;
-    }
 
     button {
       padding: var(--s-smp);
       min-width: var(--s-xl);
       flex: 0 0 auto;
-      border: none;
       background: transparent;
       color: #bbb;
-      cursor: pointer;
 
       &:hover {
-        background: #333;
+        background: #222;
       }
     }
 
     .separator {
       display: block;
-      width: 2px;
-      height: 20px;
-      background: #444;
-      margin: 0 var(--s-xs);
-      flex: 0 0 auto;
+      height: 2px;
+      background: #222;
     }
   }
 </style>

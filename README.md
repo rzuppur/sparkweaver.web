@@ -4,7 +4,9 @@ Web interface to edit and simulate [SparkWeaver](https://github.com/rzuppur/spar
 
 ![Screenshot of node based DMX lightning editor user interface](screen.jpg)
 
-# Building
+---
+
+## Develop
 
 ### Requirements
 
@@ -12,7 +14,7 @@ Web interface to edit and simulate [SparkWeaver](https://github.com/rzuppur/spar
 - Docker
 - Node
 
-### Build or Develop
+### Build
 
 1. Build webassembly by running `build.sh`. This runs the build inside an emscripten SDK Docker image and generates Wasm and a wrapper JavaScript file along with a type definition file.
 
@@ -22,7 +24,11 @@ Web interface to edit and simulate [SparkWeaver](https://github.com/rzuppur/spar
 
 A partial CMakeLists.txt is provided to make CLion understand the project, run `copy_emsdk_headers.sh` to make it fully functional. It is not used for building.
 
-# License
+---
+
+## License
+
+MIT License
 
 SparkWeaver Copyright (c) 2025 Reino Zuppur
 

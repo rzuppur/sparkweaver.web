@@ -67,7 +67,6 @@
     const text = await navigator.clipboard.readText();
     try {
       store.fromTreeString(text);
-      window.alert("Tree pasted from clipboard");
     } catch (e) {
       console.warn(e);
       window.alert(e);
@@ -121,8 +120,6 @@
     gap: var(--s-smp);
     align-items: start;
     justify-content: start;
-    overflow: auto;
-    height: 100%;
 
     .buttons {
       display: flex;
@@ -150,7 +147,6 @@
 
     button {
       padding: var(--s-xsp) var(--s-sm);
-      white-space: nowrap;
       flex: 0 0 auto;
     }
 
