@@ -157,10 +157,10 @@ export async function writeInChunks(service: BluetoothRemoteGATTService, chr_nam
   let chunkOffset = 0;
   for (; ;) {
     if (chunkOffset >= data.length) {
-      await characteristic.writeValue(new Uint8Array([CHUNK_TRANSMISSION_END]));
+      await characteristic.writeValueWithResponse(new Uint8Array([CHUNK_TRANSMISSION_END]));
       return;
     } else if (chunkNumber > CHUNK_COUNT_MAX) {
-      await characteristic.writeValue(new Uint8Array([CHUNK_TRANSMISSION_ERROR]));
+      await characteristic.writeValueWithResponse(new Uint8Array([CHUNK_TRANSMISSION_ERROR]));
       throw new Error("too many chunks");
     } else {
       const packet = mergeUint8Arrays(

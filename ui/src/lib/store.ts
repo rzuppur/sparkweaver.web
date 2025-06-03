@@ -147,7 +147,6 @@ function createStore() {
           }
         }
       }
-      if (!nodes.length) throw new Error("no nodes");
       state.update(s => ({
         ...s,
         nodes,
