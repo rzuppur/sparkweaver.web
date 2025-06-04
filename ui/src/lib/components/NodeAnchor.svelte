@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { store } from "./store";
-  import { type AnchorType, SWNode } from "./SWNode.svelte";
+  import { store } from "$lib/store";
+  import { type AnchorType, SWNode } from "$lib/SWNode.svelte.js";
 
   interface Props {
     node: SWNode;

@@ -1,7 +1,7 @@
+import createModule, { type MainModule } from "$assets/core";
+import { type AnchorType, SWNode } from "$lib/SWNode.svelte";
+import { SWParam } from "$lib/SWParam.svelte";
 import { derived, get, writable } from "svelte/store";
-import createModule, { type MainModule } from "../assets/core";
-import { type AnchorType, SWNode } from "./SWNode.svelte";
-import { SWParam } from "./SWParam.svelte";
 
 interface NodeParam {
   name: string;

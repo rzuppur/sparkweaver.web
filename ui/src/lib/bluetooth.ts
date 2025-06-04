@@ -1,5 +1,5 @@
+import { mergeUint8Arrays } from "$lib/utils";
 import { get, writable } from "svelte/store";
-import { mergeUint8Arrays } from "./utils";
 
 const SVC_SW = "00001000-d8b4-4b1a-b585-d4931d8dc888";
 const CHUNK_COUNT_MAX = 0xFF - 2;

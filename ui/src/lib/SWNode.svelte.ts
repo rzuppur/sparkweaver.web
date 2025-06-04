@@ -1,4 +1,4 @@
-import { SWParam } from "./SWParam.svelte";
+import { SWParam } from "$lib/SWParam.svelte";
 
 type AnchorPosition = [x: number, y: number, w: number, h: number];
 

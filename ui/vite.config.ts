@@ -1,4 +1,5 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import path from "path";
 import postcssPresetEnv from "postcss-preset-env";
 import { defineConfig } from "vite";
 
@@ -16,4 +17,10 @@ export default defineConfig({
     host: "0.0.0.0",
   },
   plugins: [svelte()],
+  resolve: {
+    alias: {
+      $assets: path.resolve("./src/assets"),
+      $lib: path.resolve("./src/lib"),
+    },
+  },
 });

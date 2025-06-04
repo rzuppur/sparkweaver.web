@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { store } from "$lib/store";
   import { onDestroy } from "svelte";
-  import { store } from "./store";
 
   let dmxData = $state<Array<number>>([]);
 

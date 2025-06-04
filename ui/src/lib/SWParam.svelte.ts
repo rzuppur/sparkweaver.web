@@ -1,4 +1,4 @@
-import { isUnsignedShort } from "./utils";
+import { isUnsignedShort } from "$lib/utils";
 
 export class SWParam {
   protected _value: number = $state(0);

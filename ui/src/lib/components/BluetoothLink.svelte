@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { btStore, readInChunks, writeInChunks } from "$lib/bluetooth";
+  import { store } from "$lib/store";
   import { get } from "svelte/store";
-  import { btStore, readInChunks, writeInChunks } from "./bluetooth";
-  import { store } from "./store";
 
   const CHR_TREE = "00001001-d8b4-4b1a-b585-d4931d8dc888";
   const CHR_PW = "00001002-d8b4-4b1a-b585-d4931d8dc888";

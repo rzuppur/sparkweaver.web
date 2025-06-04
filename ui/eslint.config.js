@@ -14,6 +14,11 @@ export default ts.config(
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
   {
+    ignores: [
+      "src/assets",
+    ],
+  },
+  {
     languageOptions: {
       globals: {
         ...globals.browser, ...globals.node,

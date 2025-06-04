@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { store } from "./store";
+  import { store } from "$lib/store";
 
   const treeString = store.treeString;
 </script>

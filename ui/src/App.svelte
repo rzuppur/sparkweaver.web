@@ -1,12 +1,12 @@
 <script lang="ts">
+  import BluetoothLink from "$lib/components/BluetoothLink.svelte";
+  import NodeCanvas from "$lib/components/NodeCanvas.svelte";
+  import NodeEdit from "$lib/components/NodeEdit.svelte";
+  import TreeDebug from "$lib/components/NodeTreeDebug.svelte";
+  import TreeSimulation from "$lib/components/NodeTreeSimulation.svelte";
+  import { store } from "$lib/store";
   import { onDestroy, onMount } from "svelte";
   import type { Unsubscriber } from "svelte/store";
-  import BluetoothLink from "./lib/BluetoothLink.svelte";
-  import NodeCanvas from "./lib/NodeCanvas.svelte";
-  import NodeEdit from "./lib/NodeEdit.svelte";
-  import { store } from "./lib/store";
-  import TreeDebug from "./lib/TreeDebug.svelte";
-  import TreeSimulation from "./lib/TreeSimulation.svelte";
 
   let treeString = $state(localStorage.getItem("tree"));
 

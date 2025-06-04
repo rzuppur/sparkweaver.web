@@ -1,7 +1,7 @@
 <script lang="ts">
+  import Node from "$lib/components/Node.svelte";
+  import { store } from "$lib/store";
   import { onMount } from "svelte";
-  import Node from "./Node.svelte";
-  import { store } from "./store";
 
   let columnsEl = $state<HTMLElement>();
   let columnsWidth = $state(0);

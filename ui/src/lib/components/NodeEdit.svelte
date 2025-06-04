@@ -1,6 +1,6 @@
 <script lang="ts">
-  import NodeToolbar from "./NodeToolbar.svelte";
-  import { store } from "./store";
+  import NodeToolbar from "$lib/components/NodeToolbar.svelte";
+  import { store } from "$lib/store";
 
   const nodeType = $derived($store.nodeTypes.find(nt => nt.name === $store.editing?.name));
 

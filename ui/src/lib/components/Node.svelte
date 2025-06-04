@@ -1,7 +1,7 @@
 <script lang="ts">
-  import NodeAnchor from "./NodeAnchor.svelte";
-  import { store } from "./store";
-  import { SWNode } from "./SWNode.svelte";
+  import NodeAnchor from "$lib/components/NodeAnchor.svelte";
+  import { store } from "$lib/store";
+  import { SWNode } from "$lib/SWNode.svelte.js";
 
   interface Props {
     node: SWNode;

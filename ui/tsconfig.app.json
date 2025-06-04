@@ -9,7 +9,16 @@
     "checkJs": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseurl": ".",
+    "paths": {
+      "$assets/*": [
+        "src/assets/*"
+      ],
+      "$lib/*": [
+        "src/lib/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",
