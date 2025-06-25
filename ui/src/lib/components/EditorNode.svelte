@@ -1,34 +1,41 @@
 <script lang="ts">
-  import NodeAnchor from "$lib/components/NodeAnchor.svelte";
-  import { store } from "$lib/store";
-  import { SWNode } from "$lib/SWNode.svelte.js";
+  import { coreNodeTypes } from "$lib/services/coreService";
+  import CanvasNodeAnchor from "$lib/components/EditorNodeAnchor.svelte";
+  import { editorEditing } from "$lib/services/editorService.js";
+  import { Node } from "$lib/Node.svelte.js";
 
   interface Props {
-    node: SWNode;
+    node: Node;
   }
 
   let { node }: Props = $props();
 
-  const nodeType = $derived($store.nodeTypes.find(nt => nt.name === node.name));
-  const isSelected = $derived($store.editing === node);
+  const nodeType = $derived($coreNodeTypes.find(nt => nt.name === node.name));
+  const isSelected = $derived($editorEditing === node);
 
   function select(event: MouseEvent | KeyboardEvent): void {
     if ("key" in event && event.key !== "Enter") return;
-    if ($store.editing === node) {
-      $store.editing = undefined;
+    if ($editorEditing === node) {
+      $editorEditing = undefined;
     } else {
-      $store.editing = node;
+      $editorEditing = node;
     }
   }
+
+  $effect(() => {
+    if (isSelected) {
+      node.element?.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+    }
+  });
 </script>
 
 <div class="node" bind:this={node.element} class:selected={isSelected}>
   <div class="input anchors">
     {#each Array(node.colorInputAnchorsCount).keys() as ca_i (ca_i)}
-      <NodeAnchor index={ca_i} {node} location="input" type="color"></NodeAnchor>
+      <CanvasNodeAnchor index={ca_i} {node} location="input" type="color"></CanvasNodeAnchor>
     {/each}
     {#each Array(node.triggerInputAnchorsCount).keys() as ta_i (ta_i)}
-      <NodeAnchor index={ta_i} {node} location="input" type="trigger"></NodeAnchor>
+      <CanvasNodeAnchor index={ta_i} {node} location="input" type="trigger"></CanvasNodeAnchor>
     {/each}
   </div>
   <div class="content">
@@ -54,10 +61,10 @@
   </div>
   <div class="output anchors">
     {#each Array(node.colorOutputAnchorsCount).keys() as ca_i (ca_i)}
-      <NodeAnchor index={ca_i} {node} location="output" type="color"></NodeAnchor>
+      <CanvasNodeAnchor index={ca_i} {node} location="output" type="color"></CanvasNodeAnchor>
     {/each}
     {#each Array(node.triggerOutputAnchorsCount).keys() as ta_i (ta_i)}
-      <NodeAnchor index={ta_i} {node} location="output" type="trigger"></NodeAnchor>
+      <CanvasNodeAnchor index={ta_i} {node} location="output" type="trigger"></CanvasNodeAnchor>
     {/each}
   </div>
 </div>

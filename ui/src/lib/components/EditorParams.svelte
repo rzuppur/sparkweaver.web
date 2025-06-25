@@ -1,34 +1,35 @@
 <script lang="ts">
-  import NodeToolbar from "$lib/components/NodeToolbar.svelte";
-  import { store } from "$lib/store";
+  import { coreNodeTypes } from "$lib/services/coreService";
+  import { editorEditing, editorService } from "$lib/services/editorService.js";
+  import EditorToolbar from "$lib/components/EditorToolbar.svelte";
 
-  const nodeType = $derived($store.nodeTypes.find(nt => nt.name === $store.editing?.name));
+  const nodeType = $derived($coreNodeTypes.find(nt => nt.name === $editorEditing?.name));
 
   function duplicateNode(): void {
-    if ($store.editing) {
-      store.addNode($store.editing.clone());
+    if ($editorEditing) {
+      editorService.addNode($editorEditing.clone());
     }
   }
 
   function deleteNode(): void {
-    if ($store.editing) {
-      store.removeNode($store.editing);
+    if ($editorEditing) {
+      editorService.removeNode($editorEditing);
     }
   }
 </script>
 
-<div class="node-edit" class:editing={$store.editing}>
+<div class="node-edit" class:editing={$editorEditing}>
   <div class="node-toolbar-area">
-    <NodeToolbar></NodeToolbar>
+    <EditorToolbar></EditorToolbar>
   </div>
   <div class="node-edit-area">
     <div class="node-params">
-      {#if $store.editing}
+      {#if $editorEditing}
         <div class="header">
           <div class="node-name">{nodeType?.title}</div>
           <button type="button" onclick={duplicateNode}>Duplicate</button>
         </div>
-        {#each $store.editing.params as param, p_i (p_i)}
+        {#each $editorEditing.params as param, p_i (p_i)}
           <div class="param">
             <div class="param-name">{param.name}</div>
             <div class="param-value">

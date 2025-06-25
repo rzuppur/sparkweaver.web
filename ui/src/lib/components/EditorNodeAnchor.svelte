@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { store } from "$lib/store";
-  import { type AnchorType, SWNode } from "$lib/SWNode.svelte.js";
+  import { editorSelection, editorService } from "$lib/services/editorService.js";
+  import { type AnchorType, Node } from "$lib/Node.svelte.js";
+  import { uiService } from "$lib/services/uiService";
 
   interface Props {
-    node: SWNode;
+    node: Node;
     location: "input" | "output";
     type: AnchorType;
     index: number;
@@ -20,26 +21,26 @@
   const connectionFrom = $derived(isInput ? other : node);
   const connectionTo = $derived(isInput ? node : other);
   const isSelected = $derived(
-    !other && $store.selectionType === type && (isInput ? node === $store.selectedTo : node === $store.selectedFrom),
+    !other && $editorSelection.type === type && (isInput ? node === $editorSelection.to : node === $editorSelection.from),
   );
 
   function onClick() {
     if (connectionFrom && connectionTo) {
       if (type === "color") {
-        SWNode.disconnectColor(connectionFrom, connectionTo);
+        Node.disconnectColor(connectionFrom, connectionTo);
       } else {
-        SWNode.disconnectTrigger(connectionFrom, connectionTo);
+        Node.disconnectTrigger(connectionFrom, connectionTo);
       }
     } else {
       try {
         if (isInput) {
-          store.selectTo(node, type);
+          editorService.selectTo(node, type);
         } else {
-          store.selectFrom(node, type);
+          editorService.selectFrom(node, type);
         }
       } catch (e) {
-        console.warn(e);
-        store.deselect();
+        uiService.alertError(`${e}`);
+        editorService.deselect();
       }
     }
   }

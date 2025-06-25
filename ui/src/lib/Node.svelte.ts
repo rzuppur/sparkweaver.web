@@ -1,4 +1,5 @@
-import { SWParam } from "$lib/SWParam.svelte";
+import { NodeParam } from "$lib/NodeParam.svelte.js";
+import { editorService } from "$lib/services/editorService";
 
 type AnchorPosition = [x: number, y: number, w: number, h: number];
 
@@ -6,11 +7,11 @@ export type AnchorType = "color" | "trigger";
 
 const OUTPUTS_UNLIMITED = 32;
 
-export class SWNode {
-  protected _colorInputs: Array<SWNode> = $state([]);
-  protected _colorOutputs: Array<SWNode> = $state([]);
-  protected _triggerInputs: Array<SWNode> = $state([]);
-  protected _triggerOutputs: Array<SWNode> = $state([]);
+export class Node {
+  protected _colorInputs: Array<Node> = $state([]);
+  protected _colorOutputs: Array<Node> = $state([]);
+  protected _triggerInputs: Array<Node> = $state([]);
+  protected _triggerOutputs: Array<Node> = $state([]);
 
   protected colorInputAnchorPositions: Array<AnchorPosition> = $state([]);
   protected colorOutputAnchorPositions: Array<AnchorPosition> = $state([]);
@@ -21,7 +22,7 @@ export class SWNode {
   private static nextUid = 0;
 
   public element?: HTMLElement = $state();
-  public readonly params: ReadonlyArray<SWParam> = $state([]);
+  public readonly params: ReadonlyArray<NodeParam> = $state([]);
   public readonly uid: number;
 
   constructor(
@@ -31,11 +32,11 @@ export class SWNode {
     public readonly maxTriggerInputs: number,
     public readonly enableColorOutputs: boolean,
     public readonly enableTriggerOutputs: boolean,
-    params: ReadonlyArray<SWParam>,
+    params: ReadonlyArray<NodeParam>,
   ) {
-    this.uid = SWNode.nextUid++;
+    this.uid = Node.nextUid++;
     this.params = params;
-    this.updatePosition();
+    this.updateAnchorPositions();
   }
 
   public destroy(): void {
@@ -46,14 +47,14 @@ export class SWNode {
     this._triggerOutputs.forEach(n => n.removeTriggerInput(this));
   }
 
-  public clone(): SWNode {
+  public clone(): Node {
     const params = this
-      .params.map(p => new SWParam(p.name, p.min, p.max, p.defaultValue))
+      .params.map(p => new NodeParam(p.name, p.min, p.max, p.defaultValue))
       .map((p, i) => {
         p.value = this.params[i].value;
         return p;
       });
-    return new SWNode(
+    return new Node(
       this.name,
       this.title,
       this.maxColorInputs,
@@ -84,63 +85,63 @@ export class SWNode {
         p[3] !== b[i][3]);
   }
 
-  protected getColorOutputAnchorPosition(to: SWNode): AnchorPosition | undefined {
+  protected getColorOutputAnchorPosition(to: Node): AnchorPosition | undefined {
     const index = this.colorOutputs.indexOf(to);
     if (index >= 0) {
       return this.colorOutputAnchorPositions.at(index);
     }
   }
 
-  protected getTriggerOutputAnchorPosition(to: SWNode): AnchorPosition | undefined {
+  protected getTriggerOutputAnchorPosition(to: Node): AnchorPosition | undefined {
     const index = this.triggerOutputs.indexOf(to);
     if (index >= 0) {
       return this.triggerOutputAnchorPositions.at(index);
     }
   }
 
-  private updatePosition(): void {
+  private updateAnchorPositions(): void {
     // Color input
     if (this.element && this.colorInputAnchorsCount) {
       const positions = this.getAnchorPositions(".input .anchor.color");
-      if (SWNode.diffAnchorPositions(positions, this.colorInputAnchorPositions)) {
+      if (Node.diffAnchorPositions(positions, this.colorInputAnchorPositions)) {
         this.colorInputAnchorPositions = positions;
       }
-    } else if (SWNode.diffAnchorPositions([], this.colorInputAnchorPositions)) {
+    } else if (Node.diffAnchorPositions([], this.colorInputAnchorPositions)) {
       this.colorInputAnchorPositions = [];
     }
 
     // Color output
     if (this.element && this.colorOutputAnchorsCount) {
       const positions = this.getAnchorPositions(".output .anchor.color");
-      if (SWNode.diffAnchorPositions(positions, this.colorOutputAnchorPositions)) {
+      if (Node.diffAnchorPositions(positions, this.colorOutputAnchorPositions)) {
         this.colorOutputAnchorPositions = positions;
       }
-    } else if (SWNode.diffAnchorPositions([], this.colorOutputAnchorPositions)) {
+    } else if (Node.diffAnchorPositions([], this.colorOutputAnchorPositions)) {
       this.colorOutputAnchorPositions = [];
     }
 
     // Trigger input
     if (this.element && this.triggerInputAnchorsCount) {
       const positions = this.getAnchorPositions(".input .anchor.trigger");
-      if (SWNode.diffAnchorPositions(positions, this.triggerInputAnchorPositions)) {
+      if (Node.diffAnchorPositions(positions, this.triggerInputAnchorPositions)) {
         this.triggerInputAnchorPositions = positions;
       }
-    } else if (SWNode.diffAnchorPositions([], this.triggerInputAnchorPositions)) {
+    } else if (Node.diffAnchorPositions([], this.triggerInputAnchorPositions)) {
       this.triggerInputAnchorPositions = [];
     }
 
     // Trigger output
     if (this.element && this.triggerOutputAnchorsCount) {
       const positions = this.getAnchorPositions(".output .anchor.trigger");
-      if (SWNode.diffAnchorPositions(positions, this.triggerOutputAnchorPositions)) {
+      if (Node.diffAnchorPositions(positions, this.triggerOutputAnchorPositions)) {
         this.triggerOutputAnchorPositions = positions;
       }
-    } else if (SWNode.diffAnchorPositions([], this.triggerOutputAnchorPositions)) {
+    } else if (Node.diffAnchorPositions([], this.triggerOutputAnchorPositions)) {
       this.triggerOutputAnchorPositions = [];
     }
 
     // Reschedule
-    this.animationFrameId = window.requestAnimationFrame(this.updatePosition.bind(this));
+    this.animationFrameId = window.requestAnimationFrame(this.updateAnchorPositions.bind(this));
   }
 
   protected static getCablePath(from: AnchorPosition, to: AnchorPosition): string {
@@ -172,7 +173,7 @@ export class SWNode {
       if (!otherSide) continue;
       const outputPosition = otherSide.getColorOutputAnchorPosition(this);
       if (!outputPosition) continue;
-      lines.push([this.uid, otherSide.uid, SWNode.getCablePath(outputPosition, inputPosition)]);
+      lines.push([this.uid, otherSide.uid, Node.getCablePath(outputPosition, inputPosition)]);
     }
     return lines;
   });
@@ -184,46 +185,58 @@ export class SWNode {
       if (!otherSide) continue;
       const outputPosition = otherSide.getTriggerOutputAnchorPosition(this);
       if (!outputPosition) continue;
-      lines.push([this.uid, otherSide.uid, SWNode.getCablePath(outputPosition, inputPosition)]);
+      lines.push([this.uid, otherSide.uid, Node.getCablePath(outputPosition, inputPosition)]);
     }
     return lines;
   });
 
-  protected addColorInput(node: SWNode): void {
+  public addColorInput(node: Node): void {
+    if (node === this) throw new Error("Cannot connect to itself");
+    if (this.colorInputs.includes(node)) throw new Error("Already connected");
+    if (node.hasDependency(this)) throw new Error(`Circular color dependency ${node.name} => ${this.name}`);
     if (this._colorInputs.length >= this.maxColorInputs) throw new Error("too many inputs");
     this._colorInputs.push(node);
   }
 
-  protected addColorOutput(node: SWNode): void {
+  public addColorOutput(node: Node): void {
+    if (node === this) throw new Error("Cannot connect to itself");
+    if (this.colorOutputs.includes(node)) throw new Error("Already connected");
+    if (this.hasDependency(node)) throw new Error(`Circular color dependency ${this.name} => ${node.name}`);
     if (!this.enableColorOutputs) throw new Error("color outputs are disabled");
     if (this._colorOutputs.length >= OUTPUTS_UNLIMITED) throw new Error("too many outputs");
     this._colorOutputs.push(node);
   }
 
-  protected addTriggerInput(node: SWNode): void {
+  public addTriggerInput(node: Node): void {
+    if (node === this) throw new Error("Cannot connect to itself");
+    if (this.triggerInputs.includes(node)) throw new Error("Already connected");
+    if (node.hasDependency(this)) throw new Error(`Circular trigger dependency ${node.name} => ${this.name}`);
     if (this._triggerInputs.length >= this.maxTriggerInputs) throw new Error("too many inputs");
     this._triggerInputs.push(node);
   }
 
-  protected addTriggerOutput(node: SWNode): void {
+  public addTriggerOutput(node: Node): void {
+    if (node === this) throw new Error("Cannot connect to itself");
+    if (this.triggerOutputs.includes(node)) throw new Error("Already connected");
+    if (this.hasDependency(node)) throw new Error(`Circular trigger dependency ${this.name} => ${node.name}`);
     if (!this.enableTriggerOutputs) throw new Error("trigger outputs are disabled");
     if (this._triggerOutputs.length >= OUTPUTS_UNLIMITED) throw new Error("too many outputs");
     this._triggerOutputs.push(node);
   }
 
-  protected removeColorInput(node: SWNode): void {
+  protected removeColorInput(node: Node): void {
     this._colorInputs = this._colorInputs.filter(n => n !== node);
   }
 
-  protected removeColorOutput(node: SWNode): void {
+  protected removeColorOutput(node: Node): void {
     this._colorOutputs = this._colorOutputs.filter(n => n !== node);
   }
 
-  protected removeTriggerInput(node: SWNode): void {
+  protected removeTriggerInput(node: Node): void {
     this._triggerInputs = this._triggerInputs.filter(n => n !== node);
   }
 
-  protected removeTriggerOutput(node: SWNode): void {
+  protected removeTriggerOutput(node: Node): void {
     this._triggerOutputs = this._triggerOutputs.filter(n => n !== node);
   }
 
@@ -251,52 +264,47 @@ export class SWNode {
     return existing;
   }
 
-  public get colorInputs(): ReadonlyArray<SWNode> {
+  public get colorInputs(): ReadonlyArray<Node> {
     return this._colorInputs;
   }
 
-  public get colorOutputs(): ReadonlyArray<SWNode> {
+  public get colorOutputs(): ReadonlyArray<Node> {
     return this._colorOutputs;
   }
 
-
-  public get triggerInputs(): ReadonlyArray<SWNode> {
+  public get triggerInputs(): ReadonlyArray<Node> {
     return this._triggerInputs;
   }
 
-  public get triggerOutputs(): ReadonlyArray<SWNode> {
+  public get triggerOutputs(): ReadonlyArray<Node> {
     return this._triggerOutputs;
   }
 
-  protected hasDependency(node: SWNode): boolean {
+  protected hasDependency(node: Node): boolean {
     if (this._colorInputs.includes(node)) return true;
     if (this._triggerInputs.includes(node)) return true;
     return this._colorInputs.some(n => n.hasDependency(node)) || this._triggerInputs.some(n => n.hasDependency(node));
   }
 
-  public static connectColor(from: SWNode, to: SWNode): void {
-    if (from === to) throw new Error("Cannot connect to itself");
-    if (from.colorOutputs.includes(to) || to.colorInputs.includes(from)) throw new Error("Already connected");
-    if (to.hasDependency(from) || from.hasDependency(to)) throw new Error("Circular dependency");
+  public static connectColor(from: Node, to: Node): void {
     from.addColorOutput(to);
     to.addColorInput(from);
   }
 
-  public static disconnectColor(from: SWNode, to: SWNode): void {
+  public static disconnectColor(from: Node, to: Node): void {
     from.removeColorOutput(to);
     to.removeColorInput(from);
+    editorService.triggerNodesUpdate();
   }
 
-  public static connectTrigger(from: SWNode, to: SWNode): void {
-    if (from === to) throw new Error("Cannot connect to itself");
-    if (from.triggerOutputs.includes(to) || to.triggerInputs.includes(from)) throw new Error("Already connected");
-    if (from.hasDependency(to)) throw new Error("Circular dependency");
+  public static connectTrigger(from: Node, to: Node): void {
     from.addTriggerOutput(to);
     to.addTriggerInput(from);
   }
 
-  public static disconnectTrigger(from: SWNode, to: SWNode): void {
+  public static disconnectTrigger(from: Node, to: Node): void {
     from.removeTriggerOutput(to);
     to.removeTriggerInput(from);
+    editorService.triggerNodesUpdate();
   }
 }

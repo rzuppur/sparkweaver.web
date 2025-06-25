@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { store } from "$lib/store";
-
-  const treeString = store.treeString;
+  import { editorTreeString } from "$lib/services/editorService.js";
 </script>
 
 <div class="tree-debug">
-  <pre>{$treeString}</pre>
+  <pre>{$editorTreeString}</pre>
 </div>
 
 <style>

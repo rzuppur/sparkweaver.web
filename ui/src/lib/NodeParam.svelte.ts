@@ -1,6 +1,6 @@
 import { isUnsignedShort } from "$lib/utils";
 
-export class SWParam {
+export class NodeParam {
   protected _value: number = $state(0);
 
   constructor(

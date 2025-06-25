@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { store } from "$lib/store";
+  import { coreNodeTypes } from "$lib/services/coreService";
+  import { editorService } from "$lib/services/editorService.js";
 
   function addNode(nodeType: string): void {
-    store.createNode(nodeType);
+    editorService.addNewNode(nodeType);
   }
 
-  const sourceTypes = $derived($store.nodeTypes.filter(n => n.name.startsWith("Sr")).sort((a, b) => a.title.localeCompare(b.title)));
-  const triggerTypes = $derived($store.nodeTypes.filter(n => n.name.startsWith("Tr")).sort((a, b) => a.title.localeCompare(b.title)));
-  const effectTypes = $derived($store.nodeTypes.filter(n => n.name.startsWith("Fx")).sort((a, b) => a.title.localeCompare(b.title)));
-  const mixTypes = $derived($store.nodeTypes.filter(n => n.name.startsWith("Mx")).sort((a, b) => a.title.localeCompare(b.title)));
-  const destinationTypes = $derived($store.nodeTypes.filter(n => n.name.startsWith("Ds")).sort((a, b) => a.title.localeCompare(b.title)));
+  const sourceTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Sr")).sort((a, b) => a.title.localeCompare(b.title)));
+  const triggerTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Tr")).sort((a, b) => a.title.localeCompare(b.title)));
+  const effectTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Fx")).sort((a, b) => a.title.localeCompare(b.title)));
+  const mixTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Mx")).sort((a, b) => a.title.localeCompare(b.title)));
+  const destinationTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Ds")).sort((a, b) => a.title.localeCompare(b.title)));
 </script>
 
 <div class="toolbar">

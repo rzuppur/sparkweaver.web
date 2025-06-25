@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Node from "$lib/components/Node.svelte";
-  import { store } from "$lib/store";
+  import CanvasNode from "$lib/components/EditorNode.svelte";
+  import { editorEditing, editorNodes } from "$lib/services/editorService.js";
   import { onMount } from "svelte";
 
   let columnsEl = $state<HTMLElement>();
@@ -24,14 +24,14 @@
     };
   });
 
-  const sourceNodes = $derived($store.nodes.filter(n => n.name.startsWith("Sr")));
-  const triggerNodes = $derived($store.nodes.filter(n => n.name.startsWith("Tr")));
-  const effectNodes = $derived($store.nodes.filter(n => n.name.startsWith("Fx")));
-  const mixNodes = $derived($store.nodes.filter(n => n.name.startsWith("Mx")));
-  const destinationNodes = $derived($store.nodes.filter(n => n.name.startsWith("Ds")));
+  const sourceNodes = $derived($editorNodes.filter(n => n.name.startsWith("Sr")));
+  const triggerNodes = $derived($editorNodes.filter(n => n.name.startsWith("Tr")));
+  const effectNodes = $derived($editorNodes.filter(n => n.name.startsWith("Fx")));
+  const mixNodes = $derived($editorNodes.filter(n => n.name.startsWith("Mx")));
+  const destinationNodes = $derived($editorNodes.filter(n => n.name.startsWith("Ds")));
 
-  const lineOpacity = $derived($store.editing ? 0.1 : 0.3);
-  const selectedUid = $derived($store.editing?.uid);
+  const lineOpacity = $derived($editorEditing ? 0.1 : 0.3);
+  const selectedUid = $derived($editorEditing?.uid);
 
   function isSelected(line: [number, number, string]): boolean {
     return line[0] === selectedUid || line[1] === selectedUid;
@@ -45,7 +45,7 @@
     width={columnsWidth}
     height={columnsHeight}
   >
-    {#each $store.nodes as node (node.uid)}
+    {#each $editorNodes as node (node.uid)}
       {#each node.colorLines as line, cl_i (cl_i)}
         <path
           d={line[2]}
@@ -72,31 +72,31 @@
     <div class="column">
       <div class="column-title">Source</div>
       {#each sourceNodes as node (node.uid)}
-        <Node {node}></Node>
+        <CanvasNode {node}></CanvasNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Trigger</div>
       {#each triggerNodes as node (node.uid)}
-        <Node {node}></Node>
+        <CanvasNode {node}></CanvasNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Effect</div>
       {#each effectNodes as node (node.uid)}
-        <Node {node}></Node>
+        <CanvasNode {node}></CanvasNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Mix</div>
       {#each mixNodes as node (node.uid)}
-        <Node {node}></Node>
+        <CanvasNode {node}></CanvasNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Destination</div>
       {#each destinationNodes as node (node.uid)}
-        <Node {node}></Node>
+        <CanvasNode {node}></CanvasNode>
       {/each}
     </div>
   </div>
