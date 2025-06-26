@@ -1,4 +1,4 @@
-import { uiService } from "$lib/services/uiService";
+import type { UiService } from "$lib/services/uiService";
 import { mergeUint8Arrays } from "$lib/utils";
 import { get, readonly, writable } from "svelte/store";
 
@@ -20,7 +20,7 @@ export enum BluetoothState {
   COMMUNICATING,
 }
 
-class BluetoothService {
+export class BluetoothService {
   private readonly _state = writable<BluetoothState>(BluetoothState.UNINITIALIZED);
   public readonly state = readonly(this._state);
 
@@ -30,7 +30,15 @@ class BluetoothService {
   private requestsInProgress = writable(0);
   private device?: BluetoothDevice;
 
-  constructor() {
+  private uiService!: UiService;
+
+  public inject(
+    uiService: UiService,
+  ): void {
+    this.uiService = uiService;
+  }
+
+  public init(): void {
     if ("bluetooth" in navigator) {
       navigator.bluetooth.getAvailability()
         .then(available => {
@@ -66,17 +74,17 @@ class BluetoothService {
     try {
       const requestedDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: [SVC_SW] }] });
       if (!requestedDevice.gatt) {
-        uiService.alertError("Bluetooth connection failed");
+        this.uiService.alertError("Bluetooth connection failed");
         this.reset();
         return false;
       }
       requestedDevice.addEventListener("gattserverdisconnected", () => {
-        uiService.alertInfo("Bluetooth device disconnected");
+        this.uiService.alertInfo("Bluetooth device disconnected");
         this.reset();
       });
       const server = await requestedDevice.gatt.connect();
       if (!server?.connected) {
-        uiService.alertError("Bluetooth connection failed");
+        this.uiService.alertError("Bluetooth connection failed");
         this.reset();
         return false;
       }
@@ -95,9 +103,9 @@ class BluetoothService {
       return true;
     } catch (e) {
       if (e && typeof e === "object" && "name" in e && typeof e.name === "string" && e.name === "NotFoundError") {
-        uiService.alertInfo("Bluetooth device not found.");
+        this.uiService.alertInfo("Bluetooth device not found.");
       } else {
-        uiService.alertError(`${e}`);
+        this.uiService.alertError(`${e}`);
       }
       this.reset();
     }
@@ -115,7 +123,7 @@ class BluetoothService {
       if (!service) throw new Error("No service");
       return await request(service);
     } catch (e) {
-      uiService.alertError(`${e}`);
+      this.uiService.alertError(`${e}`);
     } finally {
       this.requestsInProgress.update(r => --r);
     }
@@ -169,7 +177,3 @@ export async function writeInChunks(service: BluetoothRemoteGATTService, chr_nam
     }
   }
 }
-
-export const bluetoothService = new BluetoothService();
-export const bluetoothState = bluetoothService.state;
-export const bluetoothPwNeedsChanging = bluetoothService.pwNeedsChanging;

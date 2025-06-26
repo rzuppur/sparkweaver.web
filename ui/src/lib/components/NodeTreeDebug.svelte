@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { editorTreeString } from "$lib/services/editorService.js";
+  import { editorTreeString } from "$lib/services";
 </script>
 
 <div class="tree-debug">

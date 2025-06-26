@@ -1,10 +1,10 @@
 <script lang="ts">
-  import SimulationLightRgb from "$lib/components/SimulationLightRgb.svelte";
-  import { coreReady, coreService, coreSimulationDmxData, coreSimulationOutputs, CoreSimulationState, coreSimulationState, coreSimulationTick } from "$lib/services/coreService";
-  import { editorTreeString } from "$lib/services/editorService";
+  import SimulationLight from "$lib/components/SimulationLight.svelte";
+  import { coreReady, coreService, coreSimulationDmxData, coreSimulationOutputs, coreSimulationState, coreSimulationTick, editorTreeString } from "$lib/services";
+  import { CoreSimulationState } from "$lib/services/coreService";
   import { onMount } from "svelte";
 
-  let autoRun = $state(false);
+  let autoRun = $state(true);
   let updateTimer: number | undefined = undefined;
 
   function toggleAutoRun(): void {
@@ -45,9 +45,7 @@
 <div class="project-toolbar">
   {#if $coreReady}
     {#each $coreSimulationOutputs as output, i (i)}
-      {#if output.type === "RGB"}
-        <SimulationLightRgb dmxData={$coreSimulationDmxData} address={output.address} size={12}></SimulationLightRgb>
-      {/if}
+      <SimulationLight dmxData={$coreSimulationDmxData} address={output.address} size={12}></SimulationLight>
     {/each}
     {#if $coreSimulationOutputs.length}
       <div></div>
@@ -135,7 +133,7 @@
       white-space: nowrap;
       text-transform: uppercase;
       font-size: 13px;
-      opacity: 0.3;
+      opacity: 0.4;
       letter-spacing: 0.1em;
     }
 
@@ -156,6 +154,7 @@
         width: 20px;
         height: 20px;
         display: block;
+        flex: 0 0 auto;
       }
     }
   }

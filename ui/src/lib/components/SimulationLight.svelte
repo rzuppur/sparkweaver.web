@@ -12,7 +12,11 @@
   const b = $derived(dmxData.at(address + 2) ?? 0);
 </script>
 
-<div class="light" style="--light-size: {size}px; --light-color: rgb({r}, {g}, {b});"></div>
+<div
+  class="light"
+  style="--light-size: {size}px; --light-color: rgb({r}, {g}, {b});"
+  title={address.toString(10).padStart(3, "0")}
+></div>
 
 <style>
   .light {
@@ -21,6 +25,7 @@
     border-radius: 50%;
     background: var(--light-color);
     box-shadow: 0 0 var(--light-size) 2px var(--light-color);
+    outline: 1px solid #fff1;
   }
 </style>
 

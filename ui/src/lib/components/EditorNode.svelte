@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { coreNodeTypes } from "$lib/services/coreService";
-  import CanvasNodeAnchor from "$lib/components/EditorNodeAnchor.svelte";
-  import { editorEditing } from "$lib/services/editorService.js";
+  import EditorNodeAnchor from "$lib/components/EditorNodeAnchor.svelte";
   import { Node } from "$lib/Node.svelte.js";
+  import { coreNodeTypes, editorEditing } from "$lib/services";
 
   interface Props {
     node: Node;
@@ -32,10 +31,10 @@
 <div class="node" bind:this={node.element} class:selected={isSelected}>
   <div class="input anchors">
     {#each Array(node.colorInputAnchorsCount).keys() as ca_i (ca_i)}
-      <CanvasNodeAnchor index={ca_i} {node} location="input" type="color"></CanvasNodeAnchor>
+      <EditorNodeAnchor index={ca_i} {node} location="input" type="color"></EditorNodeAnchor>
     {/each}
     {#each Array(node.triggerInputAnchorsCount).keys() as ta_i (ta_i)}
-      <CanvasNodeAnchor index={ta_i} {node} location="input" type="trigger"></CanvasNodeAnchor>
+      <EditorNodeAnchor index={ta_i} {node} location="input" type="trigger"></EditorNodeAnchor>
     {/each}
   </div>
   <div class="content">
@@ -61,10 +60,10 @@
   </div>
   <div class="output anchors">
     {#each Array(node.colorOutputAnchorsCount).keys() as ca_i (ca_i)}
-      <CanvasNodeAnchor index={ca_i} {node} location="output" type="color"></CanvasNodeAnchor>
+      <EditorNodeAnchor index={ca_i} {node} location="output" type="color"></EditorNodeAnchor>
     {/each}
     {#each Array(node.triggerOutputAnchorsCount).keys() as ta_i (ta_i)}
-      <CanvasNodeAnchor index={ta_i} {node} location="output" type="trigger"></CanvasNodeAnchor>
+      <EditorNodeAnchor index={ta_i} {node} location="output" type="trigger"></EditorNodeAnchor>
     {/each}
   </div>
 </div>

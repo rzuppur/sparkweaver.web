@@ -1,5 +1,5 @@
 import { NodeParam } from "$lib/NodeParam.svelte.js";
-import { editorService } from "$lib/services/editorService";
+import { editorService } from "$lib/services";
 
 type AnchorPosition = [x: number, y: number, w: number, h: number];
 

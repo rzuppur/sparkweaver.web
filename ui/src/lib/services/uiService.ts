@@ -1,20 +1,26 @@
 import { readonly, writable } from "svelte/store";
 
-type UiTab = "nodes" | "bluetooth" | "debug";
+type ProjectTab = "nodes" | "bluetooth" | "debug";
 
-class UiService {
+export class UiService {
   private readonly UI_TAB_KEY = "sw_ui_tab";
 
-  private readonly _tab = writable<UiTab>(this.getSavedTab());
+  private readonly _tab = writable<ProjectTab>(this.getSavedTab());
   public readonly tab = readonly(this._tab);
 
-  private getSavedTab(): UiTab {
+  public inject(): void {
+  }
+
+  public init(): void {
+  }
+
+  private getSavedTab(): ProjectTab {
     const tab = localStorage.getItem(this.UI_TAB_KEY);
-    if (typeof tab === "string" && ["nodes", "simulation", "bluetooth", "debug"].includes(tab)) return tab as UiTab;
+    if (typeof tab === "string" && ["nodes", "simulation", "bluetooth", "debug"].includes(tab)) return tab as ProjectTab;
     return "nodes";
   }
 
-  public changeTab(newTab: UiTab): void {
+  public changeTab(newTab: ProjectTab): void {
     if (newTab) localStorage.setItem(this.UI_TAB_KEY, newTab);
     else localStorage.removeItem(this.UI_TAB_KEY);
     this._tab.set(newTab);
@@ -29,6 +35,3 @@ class UiService {
     window.alert(message);
   }
 }
-
-export const uiService = new UiService();
-export const uiTab = uiService.tab;

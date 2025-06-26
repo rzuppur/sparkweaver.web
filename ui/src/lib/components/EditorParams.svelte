@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { coreNodeTypes } from "$lib/services/coreService";
-  import { editorEditing, editorService } from "$lib/services/editorService.js";
   import EditorToolbar from "$lib/components/EditorToolbar.svelte";
+  import { coreNodeTypes, editorEditing, editorService } from "$lib/services";
 
   const nodeType = $derived($coreNodeTypes.find(nt => nt.name === $editorEditing?.name));
 

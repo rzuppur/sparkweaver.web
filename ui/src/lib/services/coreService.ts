@@ -1,6 +1,6 @@
 import createModule, { type MainModule } from "$assets/core";
-import { editorService } from "$lib/services/editorService";
-import { uiService } from "$lib/services/uiService";
+import type { EditorService } from "$lib/services/editorService";
+import type { UiService } from "$lib/services/uiService";
 import { get, readonly, writable } from "svelte/store";
 
 interface NodeParam {
@@ -28,11 +28,10 @@ export enum CoreSimulationState {
 }
 
 interface DmxOutput {
-  type: "RGB";
   address: number;
 }
 
-class CoreService {
+export class CoreService {
   private module: MainModule | undefined;
 
   private readonly _nodeTypes = writable<Array<NodeType>>([]);
@@ -53,14 +52,25 @@ class CoreService {
   private readonly _simulationOutputs = writable<Array<DmxOutput>>([]);
   public readonly simulationOutputs = readonly(this._simulationOutputs);
 
-  constructor() {
+  private editorService!: EditorService;
+  private uiService!: UiService;
+
+  public inject(
+    editorService: EditorService,
+    uiService: UiService,
+  ): void {
+    this.editorService = editorService;
+    this.uiService = uiService;
+  }
+
+  public init(): void {
     createModule().then(module => {
       this.module = module;
       this.parseNodeTypes();
       this._ready.set(true);
     }).catch((reason) => {
       this.module = undefined;
-      uiService.alertError(reason.toString());
+      this.uiService.alertError(reason.toString());
     });
 
     window.setInterval(() => {
@@ -104,9 +114,9 @@ class CoreService {
     const result = this.module.build(treeString);
     if (result === "OK") {
       const outputs: Array<DmxOutput> = [];
-      for (const [command, params] of editorService.treeStringToParts(treeString)) {
+      for (const [command, params] of this.editorService.treeStringToParts(treeString)) {
         if (command === "DsDmxRgb" && params.length) {
-          outputs.push({ address: params[0], type: "RGB" });
+          outputs.push({ address: params[0] });
         }
       }
       this._simulationOutputs.set(outputs);
@@ -114,7 +124,7 @@ class CoreService {
       this._simulationTick.set(0);
       this._simulationState.set(CoreSimulationState.PAUSED);
     } else {
-      uiService.alertError(result);
+      this.uiService.alertError(result);
       this._simulationState.set(CoreSimulationState.ERROR);
     }
   }
@@ -143,11 +153,3 @@ class CoreService {
     }
   }
 }
-
-export const coreService = new CoreService();
-export const coreNodeTypes = coreService.nodeTypes;
-export const coreSimulationDmxData = coreService.simulationDmxData;
-export const coreSimulationState = coreService.simulationState;
-export const coreSimulationTick = coreService.simulationTick;
-export const coreSimulationOutputs = coreService.simulationOutputs;
-export const coreReady = coreService.ready;

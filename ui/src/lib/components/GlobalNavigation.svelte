@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uiService } from "$lib/services/uiService";
+  import { uiService } from "$lib/services";
 
   const { tab } = uiService;
 </script>

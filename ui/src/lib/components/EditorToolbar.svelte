@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { coreNodeTypes } from "$lib/services/coreService";
-  import { editorService } from "$lib/services/editorService.js";
+  import { coreNodeTypes, editorService } from "$lib/services";
 
   function addNode(nodeType: string): void {
     editorService.addNewNode(nodeType);

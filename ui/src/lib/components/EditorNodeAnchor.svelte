@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { editorSelection, editorService } from "$lib/services/editorService.js";
   import { type AnchorType, Node } from "$lib/Node.svelte.js";
-  import { uiService } from "$lib/services/uiService";
+  import { editorSelection, editorService, uiService } from "$lib/services";
 
   interface Props {
     node: Node;

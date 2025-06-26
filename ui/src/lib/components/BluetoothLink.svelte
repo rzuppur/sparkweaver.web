@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { bluetoothService, bluetoothState, BluetoothState, CHR_PW, CHR_TREE, readInChunks, writeInChunks } from "$lib/services/bluetoothService";
-  import { bluetoothPwNeedsChanging } from "$lib/services/bluetoothService.js";
-  import { editorService, editorTreeString } from "$lib/services/editorService.js";
-  import { uiService } from "$lib/services/uiService";
+  import { bluetoothPwNeedsChanging, bluetoothService, bluetoothState, editorService, editorTreeString, uiService } from "$lib/services";
+  import { BluetoothState, CHR_PW, CHR_TREE, readInChunks, writeInChunks } from "$lib/services/bluetoothService";
   import { get } from "svelte/store";
 
   let newPw = $state("");

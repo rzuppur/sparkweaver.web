@@ -1,6 +1,6 @@
 <script lang="ts">
-  import CanvasNode from "$lib/components/EditorNode.svelte";
-  import { editorEditing, editorNodes } from "$lib/services/editorService.js";
+  import EditorNode from "$lib/components/EditorNode.svelte";
+  import { editorEditing, editorNodes } from "$lib/services";
   import { onMount } from "svelte";
 
   let columnsEl = $state<HTMLElement>();
@@ -72,31 +72,31 @@
     <div class="column">
       <div class="column-title">Source</div>
       {#each sourceNodes as node (node.uid)}
-        <CanvasNode {node}></CanvasNode>
+        <EditorNode {node}></EditorNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Trigger</div>
       {#each triggerNodes as node (node.uid)}
-        <CanvasNode {node}></CanvasNode>
+        <EditorNode {node}></EditorNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Effect</div>
       {#each effectNodes as node (node.uid)}
-        <CanvasNode {node}></CanvasNode>
+        <EditorNode {node}></EditorNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Mix</div>
       {#each mixNodes as node (node.uid)}
-        <CanvasNode {node}></CanvasNode>
+        <EditorNode {node}></EditorNode>
       {/each}
     </div>
     <div class="column">
       <div class="column-title">Destination</div>
       {#each destinationNodes as node (node.uid)}
-        <CanvasNode {node}></CanvasNode>
+        <EditorNode {node}></EditorNode>
       {/each}
     </div>
   </div>
