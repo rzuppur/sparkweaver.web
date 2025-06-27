@@ -32,6 +32,10 @@ interface DmxOutput {
 }
 
 export class CoreService {
+  private readonly targetTickTime = 24;
+  private readonly maximumCatchupTicks = 10;
+  private nextTick = performance.now() + this.targetTickTime;
+
   private module: MainModule | undefined;
 
   private readonly _nodeTypes = writable<Array<NodeType>>([]);
@@ -73,11 +77,7 @@ export class CoreService {
       this.uiService.alertError(reason.toString());
     });
 
-    window.setInterval(() => {
-      if (get(this.simulationState) === CoreSimulationState.RUNNING) {
-        this.runSimulationTick();
-      }
-    }, 24);
+    this.simulationLoop();
   }
 
   private parseNodeTypes(): void {
@@ -127,6 +127,30 @@ export class CoreService {
       this.uiService.alertError(result);
       this._simulationState.set(CoreSimulationState.ERROR);
     }
+  }
+
+  private simulationLoop(): void {
+    if (get(this.simulationState) === CoreSimulationState.RUNNING) {
+      if (this.module && performance.now() >= this.nextTick) {
+        let ticksToRun = Math.max(0, Math.ceil((performance.now() - this.nextTick) / this.targetTickTime));
+        if (ticksToRun > this.maximumCatchupTicks) {
+          this.nextTick += this.targetTickTime * (ticksToRun - this.maximumCatchupTicks);
+          ticksToRun = this.maximumCatchupTicks;
+        }
+        while (ticksToRun) {
+          const data = this.module.tick();
+          this._simulationTick.update(t => ++t);
+          if (ticksToRun === 1) {
+            this._simulationDmxData.set(Array.from(data));
+          }
+          this.nextTick += this.targetTickTime;
+          --ticksToRun;
+        }
+      }
+    } else {
+      this.nextTick = performance.now() + this.targetTickTime;
+    }
+    setTimeout(this.simulationLoop.bind(this), Math.max(0, this.nextTick - performance.now()));
   }
 
   private runSimulationTick(): void {
