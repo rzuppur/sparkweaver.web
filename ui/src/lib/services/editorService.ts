@@ -1,6 +1,7 @@
 import { type AnchorType, Node } from "$lib/Node.svelte.js";
 import { NodeParam } from "$lib/NodeParam.svelte.js";
 import type { CoreService } from "$lib/services/coreService";
+import { uiService } from "$lib/services/index";
 import type { ProjectService } from "$lib/services/projectService";
 import type { UiService } from "$lib/services/uiService";
 import { derived, get, readonly, writable } from "svelte/store";
@@ -130,15 +131,16 @@ export class EditorService {
     }
   }
 
-  public treeStringToParts(treeString: string): Array<[string, Array<number>]> {
-    const result: Array<[string, Array<number>]> = [];
+  public treeStringToParts(treeString: string): Array<[string, Array<number>, number]> {
+    const result: Array<[string, Array<number>, number]> = [];
+    let commandIndex = 0;
     for (let line of treeString.split("\n")) {
       line = line.trim();
       if (!line) continue;
       const [command, ...params] = line.split(" ");
       const numberParams = params.map(p => Number.parseInt(p, 10));
       if (numberParams.some(n => Number.isNaN(n))) continue;
-      result.push([command, numberParams]);
+      result.push([command, numberParams, commandIndex++]);
     }
     return result;
   }
@@ -152,27 +154,30 @@ export class EditorService {
     this.coreReadyUnsubscribe = this.coreService.ready.subscribe((ready) => {
       if (ready) {
         this.coreReadyUnsubscribe?.();
-
         const nodes: Array<Node> = [];
-        for (const [command, params] of this.treeStringToParts(treeString)) {
-          if (command === "CI" || command === "CO" || command === "TI" || command === "TO") {
-            const connections = params;
-            if (connections.length < 2) continue;
-            const source = nodes.at(connections.shift() as number);
-            for (const connection of connections) {
-              if (command === "CI") source?.addColorInput(nodes.at(connection)!);
-              else if (command === "CO") source?.addColorOutput(nodes.at(connection)!);
-              else if (command === "TI") source?.addTriggerInput(nodes.at(connection)!);
-              else if (command === "TO") source?.addTriggerOutput(nodes.at(connection)!);
-            }
-          } else {
-            const newNode = this.nodeFromName(command);
-            if (newNode) {
-              for (let i = 0; i < newNode.params.length; i++) {
-                newNode.params[i].value = params[i];
+        for (const [command, params, commandIndex] of this.treeStringToParts(treeString)) {
+          try {
+            if (command === "CI" || command === "CO" || command === "TI" || command === "TO") {
+              const connections = structuredClone(params);
+              if (connections.length < 2) continue;
+              const source = nodes.at(connections.shift() as number);
+              for (const connection of connections) {
+                if (command === "CI") source?.addColorInput(nodes.at(connection)!);
+                else if (command === "CO") source?.addColorOutput(nodes.at(connection)!);
+                else if (command === "TI") source?.addTriggerInput(nodes.at(connection)!);
+                else if (command === "TO") source?.addTriggerOutput(nodes.at(connection)!);
               }
-              nodes.push(newNode);
+            } else {
+              const newNode = this.nodeFromName(command);
+              if (newNode) {
+                for (let i = 0; i < newNode.params.length; i++) {
+                  newNode.params[i].value = params[i];
+                }
+                nodes.push(newNode);
+              }
             }
+          } catch (e) {
+            uiService.alertError(`[${commandIndex} : ${command} ${params.join(" ")}] ${e}`);
           }
         }
 
