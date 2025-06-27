@@ -1,62 +1,74 @@
 <script lang="ts">
-  import BluetoothLink from "$lib/components/BluetoothLink.svelte";
+  import BluetoothToolbar from "$lib/components/BluetoothToolbar.svelte";
   import EditorCanvas from "$lib/components/EditorCanvas.svelte";
-  import EditorParams from "$lib/components/EditorParams.svelte";
-  import GlobalNavigation from "$lib/components/GlobalNavigation.svelte";
-  import NodeTreeDebug from "$lib/components/NodeTreeDebug.svelte";
   import ProjectToolbar from "$lib/components/ProjectToolbar.svelte";
   import SimulationToolbar from "$lib/components/SimulationToolbar.svelte";
-  import { uiTab } from "$lib/services";
+  import { uiToolbarsVisible } from "$lib/services";
 </script>
 
 <main>
-  <div class="area-span-row">
+  <div class="toolbar-l">
     <ProjectToolbar></ProjectToolbar>
   </div>
-  <div class="area-span-row">
-    <SimulationToolbar></SimulationToolbar>
-  </div>
-  <div class="area-span-row">
-    <EditorCanvas></EditorCanvas>
-  </div>
-  <div class="area-toolbar">
-    <GlobalNavigation></GlobalNavigation>
-  </div>
-  <div class="area-regular">
-    {#if $uiTab === "nodes"}
-      <EditorParams></EditorParams>
-    {:else if $uiTab === "bluetooth"}
-      <BluetoothLink></BluetoothLink>
-    {:else if $uiTab === "debug"}
-      <NodeTreeDebug></NodeTreeDebug>
+  <div class="main">
+    {#if $uiToolbarsVisible.has("bluetooth")}
+      <div class="toolbar-m">
+        <BluetoothToolbar></BluetoothToolbar>
+      </div>
     {/if}
+    {#if $uiToolbarsVisible.has("simulation")}
+      <div class="toolbar-m">
+        <SimulationToolbar></SimulationToolbar>
+      </div>
+    {/if}
+    <div class="canvas">
+      <EditorCanvas></EditorCanvas>
+    </div>
   </div>
 </main>
 
 <style>
   main {
     display: grid;
-    grid-template-columns: 52px 1fr;
-    grid-template-rows: 64px 48px 1fr 192px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
     height: 100dvh;
     background: #333;
     gap: 2px;
 
-    & > .area-span-row,
-    & > .area-regular,
-    & > .area-toolbar {
+    & > div {
       background: #111;
       min-width: 0;
       min-height: 0;
       overflow: hidden;
     }
 
-    & > .area-regular {
-      overflow-y: auto;
+    .toolbar-l {
+      height: 64px;
+      grid-column: 1 / -1;
     }
 
-    & > .area-span-row {
-      grid-column: span 2;
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #333;
+      gap: 2px;
+
+      & > div {
+        min-width: 0;
+        min-height: 0;
+        background: #111;
+      }
+
+      .toolbar-m {
+        height: 48px;
+        flex: 0 0 auto;
+      }
+
+      .canvas {
+        flex: 1 1 auto;
+      }
     }
   }
 </style>

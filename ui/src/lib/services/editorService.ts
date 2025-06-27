@@ -9,7 +9,7 @@ export class EditorService {
   private readonly _nodes = writable<Array<Node>>([]);
   public readonly nodes = readonly(this._nodes);
 
-  public readonly editing = writable<Node | undefined>(undefined);
+  public readonly selected = writable<Node | undefined>(undefined);
 
   private readonly _selection = writable<{ type: AnchorType; from?: Node; to?: Node }>({ type: "color" });
   public readonly selection = readonly(this._selection);
@@ -36,17 +36,37 @@ export class EditorService {
     });
   }
 
+  private static sortNodes(a: Node, b: Node): number {
+    const typeOrder = ["Sr", "Tr", "Fx", "Mx", "Ds"];
+    const typeA = a.name.substring(0, 2);
+    const typeB = b.name.substring(0, 2);
+    return typeOrder.indexOf(typeA) - typeOrder.indexOf(typeB);
+  }
+
+  private setNodes(newNodes: Array<Node>): void {
+    newNodes.sort(EditorService.sortNodes);
+    this._nodes.set(newNodes);
+  }
+
+  private updateNodes(updater: (nodes: Array<Node>) => Array<Node>): void {
+    this._nodes.update((nodes) => {
+      const newNodes = updater(nodes);
+      newNodes.sort(EditorService.sortNodes);
+      return newNodes;
+    });
+  }
+
   private reset(): void {
-    this._nodes.set([]);
-    this.editing.set(undefined);
+    this.setNodes([]);
+    this.selected.set(undefined);
     this.deselect();
   }
 
   /**
-   * Derived reactivity is not deep, including `this.editing` is a workaround to pick up parameter changes from the UI
+   * Derived reactivity is not deep, including `this.selected` is a workaround to pick up parameter changes from the UI
    * of the currently selected node. It will break when the parameters of an unselected node are changed.
    */
-  public readonly treeString = derived([this.nodes, this.editing], ([$nodes]) => {
+  public readonly treeString = derived([this.nodes, this.selected], ([$nodes]) => {
     let t = "";
     for (const node of $nodes) {
       t += `${node.name}`;
@@ -157,21 +177,46 @@ export class EditorService {
         }
 
         this.reset();
-        this._nodes.set(nodes);
+        this.setNodes(nodes);
       }
     });
   }
 
   public triggerNodesUpdate(): void {
-    this._nodes.update(nodes => nodes);
+    this.updateNodes(nodes => nodes);
+  }
+
+  public selectNode(node: Node): void {
+    const selection = get(this._selection);
+    if (selection.from || selection.to) {
+      if (selection.from?.uid === node.uid || selection.to?.uid === node.uid) {
+        this.selected.set(undefined);
+        this.deselect();
+      } else {
+        try {
+          if (selection.from) {
+            this.selectTo(node, selection.type);
+          } else {
+            this.selectFrom(node, selection.type);
+          }
+        } catch {
+          this.deselect();
+        }
+      }
+    } else {
+      this.selected.update(selected => {
+        if (selected?.uid === node.uid) return undefined;
+        return node;
+      });
+    }
   }
 
   public addNode(node: Node): void {
-    this._nodes.update(nodes => {
+    this.updateNodes(nodes => {
       if (nodes.includes(node)) this.uiService.alertError("Node already in tree");
       return [...nodes, node];
     });
-    this.editing.set(node);
+    this.selected.set(node);
   }
 
   public addNewNode(name: string): Node | undefined {
@@ -181,20 +226,20 @@ export class EditorService {
   }
 
   public removeNode(node: Node): void {
-    this.editing.update(editing => editing === node ? undefined : editing);
+    this.selected.update(selected => selected?.uid === node.uid ? undefined : selected);
     this._selection.update(({ from, to, type }) => ({
-      from: from === node ? undefined : from,
-      to: to === node ? undefined : to,
+      from: from?.uid === node.uid ? undefined : from,
+      to: to?.uid === node.uid ? undefined : to,
       type: type,
     }));
-    this._nodes.update(nodes => nodes.filter(n => n !== node));
     node.destroy();
+    this.updateNodes(nodes => nodes.filter(n => n.uid !== node.uid));
   }
 
   selectFrom(node: Node, anchorType: AnchorType): void {
     this._selection.update(({ from, to, type }) => {
       // Deselect if already selected
-      if (type === anchorType && from === node) return { type: anchorType };
+      if (type === anchorType && from?.uid === node.uid) return { type: anchorType };
       // Select if new selection
       if (type !== anchorType || !to) return { from: node, type: anchorType };
       // Create connection
@@ -212,7 +257,7 @@ export class EditorService {
   selectTo(node: Node, anchorType: AnchorType): void {
     this._selection.update(({ from, to, type }) => {
       // Deselect if already selected
-      if (type === anchorType && to === node) return { type: anchorType };
+      if (type === anchorType && to?.uid === node.uid) return { type: anchorType };
       // Select if new selection
       if (type !== anchorType || !from) return { to: node, type: anchorType };
       // Create connection

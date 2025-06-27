@@ -136,7 +136,7 @@ export async function readInChunks(service: BluetoothRemoteGATTService, chr_name
   let chunkNumber = CHUNK_FIRST_INDEX;
   for (; ;) {
     const packet = new Uint8Array((await characteristic.readValue()).buffer);
-    if (packet.length == 1 && packet[0] === CHUNK_TRANSMISSION_END) {
+    if (packet.length === 1 && packet[0] === CHUNK_TRANSMISSION_END) {
       return combinedData;
     } else if (packet.length == 1 && packet[0] === CHUNK_TRANSMISSION_ERROR) {
       throw new Error("chunk transmission error");

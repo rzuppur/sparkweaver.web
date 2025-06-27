@@ -191,7 +191,7 @@ export class Node {
   });
 
   public addColorInput(node: Node): void {
-    if (node === this) throw new Error("Cannot connect to itself");
+    if (node.uid === this.uid) throw new Error("Cannot connect to itself");
     if (this.colorInputs.includes(node)) throw new Error("Already connected");
     if (node.hasDependency(this)) throw new Error(`Circular color dependency ${node.name} => ${this.name}`);
     if (this._colorInputs.length >= this.maxColorInputs) throw new Error("too many inputs");
@@ -199,7 +199,7 @@ export class Node {
   }
 
   public addColorOutput(node: Node): void {
-    if (node === this) throw new Error("Cannot connect to itself");
+    if (node.uid === this.uid) throw new Error("Cannot connect to itself");
     if (this.colorOutputs.includes(node)) throw new Error("Already connected");
     if (this.hasDependency(node)) throw new Error(`Circular color dependency ${this.name} => ${node.name}`);
     if (!this.enableColorOutputs) throw new Error("color outputs are disabled");
@@ -208,7 +208,7 @@ export class Node {
   }
 
   public addTriggerInput(node: Node): void {
-    if (node === this) throw new Error("Cannot connect to itself");
+    if (node.uid === this.uid) throw new Error("Cannot connect to itself");
     if (this.triggerInputs.includes(node)) throw new Error("Already connected");
     if (node.hasDependency(this)) throw new Error(`Circular trigger dependency ${node.name} => ${this.name}`);
     if (this._triggerInputs.length >= this.maxTriggerInputs) throw new Error("too many inputs");
@@ -216,7 +216,7 @@ export class Node {
   }
 
   public addTriggerOutput(node: Node): void {
-    if (node === this) throw new Error("Cannot connect to itself");
+    if (node.uid === this.uid) throw new Error("Cannot connect to itself");
     if (this.triggerOutputs.includes(node)) throw new Error("Already connected");
     if (this.hasDependency(node)) throw new Error(`Circular trigger dependency ${this.name} => ${node.name}`);
     if (!this.enableTriggerOutputs) throw new Error("trigger outputs are disabled");
@@ -225,19 +225,35 @@ export class Node {
   }
 
   protected removeColorInput(node: Node): void {
-    this._colorInputs = this._colorInputs.filter(n => n !== node);
+    this._colorInputs = this._colorInputs.filter(n => n.uid !== node.uid);
   }
 
   protected removeColorOutput(node: Node): void {
-    this._colorOutputs = this._colorOutputs.filter(n => n !== node);
+    this._colorOutputs = this._colorOutputs.filter(n => n.uid !== node.uid);
   }
 
   protected removeTriggerInput(node: Node): void {
-    this._triggerInputs = this._triggerInputs.filter(n => n !== node);
+    this._triggerInputs = this._triggerInputs.filter(n => n.uid !== node.uid);
   }
 
   protected removeTriggerOutput(node: Node): void {
-    this._triggerOutputs = this._triggerOutputs.filter(n => n !== node);
+    this._triggerOutputs = this._triggerOutputs.filter(n => n.uid !== node.uid);
+  }
+
+  public get hasFreeColorInputs(): boolean {
+    return this._colorInputs.length < this.maxColorInputs;
+  }
+
+  public get hasFreeColorOutputs(): boolean {
+    return this.enableColorOutputs && this._colorOutputs.length < OUTPUTS_UNLIMITED;
+  }
+
+  public get hasFreeTriggerInputs(): boolean {
+    return this._triggerInputs.length < this.maxTriggerInputs;
+  }
+
+  public get hasFreeTriggerOutputs(): boolean {
+    return this.enableTriggerOutputs && this._triggerOutputs.length < OUTPUTS_UNLIMITED;
   }
 
   public get colorInputAnchorsCount(): number {

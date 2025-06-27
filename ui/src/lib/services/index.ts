@@ -5,7 +5,6 @@ import { ProjectService } from "$lib/services/projectService";
 import { RouterService } from "$lib/services/routerService";
 import { UiService } from "$lib/services/uiService";
 
-
 export const bluetoothService = new BluetoothService();
 export const coreService = new CoreService();
 export const editorService = new EditorService();
@@ -20,7 +19,7 @@ projectService.inject(editorService, routerService);
 routerService.inject(projectService);
 uiService.inject();
 
-uiService.init();
+bluetoothService.init();
 coreService.init();
 editorService.init();
 projectService.init();
@@ -38,7 +37,7 @@ export const coreSimulationOutputs = coreService.simulationOutputs;
 export const coreReady = coreService.ready;
 
 export const editorNodes = editorService.nodes;
-export const editorEditing = editorService.editing;
+export const editorSelected = editorService.selected;
 export const editorSelection = editorService.selection;
 export const editorTreeString = editorService.treeString;
 
@@ -48,4 +47,4 @@ export const projectUnsaved = projectService.unsavedChanges;
 
 export const currentRoute = routerService.route;
 
-export const uiTab = uiService.tab;
+export const uiToolbarsVisible = uiService.toolbarsVisible;

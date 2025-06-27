@@ -1,7 +1,7 @@
 <script lang="ts">
   import { projectService, projectsList, routerService } from "$lib/services";
   import { type Project } from "$lib/services/projectService";
-  import { dateRelativeAutomatic } from "$lib/utils.js";
+  import { dateRelativeAutomatic } from "$lib/utils";
 
   function duplicateProject(project: Project): () => void {
     return () => {
@@ -28,7 +28,7 @@
       <div class="toolbar-label">Projects</div>
       <div style="flex: 1 1 auto;"></div>
       <button type="button" onclick={() => projectService.newProject()} class="toolbar-button">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
           <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
         </svg>
         <span class="toolbar-label">New project</span>
@@ -46,13 +46,13 @@
         <div style="margin-left: var(--s-smp);">
           <!--svelte-ignore a11y_consider_explicit_label-->
           <button type="button" class="project-button" title="Duplicate" onclick={duplicateProject(project)}>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M320-80q-33 0-56.5-23.5T240-160v-80h-80q-33 0-56.5-23.5T80-320v-80h80v80h80v-320q0-33 23.5-56.5T320-720h320v-80h-80v-80h80q33 0 56.5 23.5T720-800v80h80q33 0 56.5 23.5T880-640v480q0 33-23.5 56.5T800-80H320Zm0-80h480v-480H320v480ZM80-480v-160h80v160H80Zm0-240v-80q0-33 23.5-56.5T160-880h80v80h-80v80H80Zm240-80v-80h160v80H320Zm0 640v-480 480Z"/>
             </svg>
           </button>
           <!--svelte-ignore a11y_consider_explicit_label-->
           <button type="button" class="project-button" title="Delete" onclick={deleteProject(project)}>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
             </svg>
           </button>

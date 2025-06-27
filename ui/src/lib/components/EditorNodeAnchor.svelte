@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type AnchorType, Node } from "$lib/Node.svelte.js";
-  import { editorSelection, editorService, uiService } from "$lib/services";
+  import { editorSelected, editorSelection, editorService, uiService } from "$lib/services";
 
   interface Props {
     node: Node;
@@ -20,8 +20,9 @@
   const connectionFrom = $derived(isInput ? other : node);
   const connectionTo = $derived(isInput ? node : other);
   const isSelected = $derived(
-    !other && $editorSelection.type === type && (isInput ? node === $editorSelection.to : node === $editorSelection.from),
+    !other && $editorSelection.type === type && (isInput ? node.uid === $editorSelection.to?.uid : node.uid === $editorSelection.from?.uid),
   );
+  const isOtherSelected = $derived(other?.uid === $editorSelected?.uid);
 
   function onClick() {
     if (connectionFrom && connectionTo) {
@@ -54,10 +55,12 @@
   class:selected={isSelected}
   class:color={type === "color"}
   class:trigger={type === "trigger"}
+  class:highlight={isOtherSelected}
   aria-label="{node.name} {location} number {index + 1}"
 >
-  {#if type === "trigger"}
-    T
+  {#if !other}
+    {#if type === "color"}C{/if}
+    {#if type === "trigger"}T{/if}
   {/if}
 </button>
 
@@ -70,27 +73,23 @@
     appearance: none;
     border: none;
     font-size: 13px;
-
-    @media (pointer: fine) {
-      width: var(--s-md);
-      height: var(--s-md);
-    }
+    color: #111;
+    font-weight: 700;
+    user-select: none;
 
     &.color {
-      background: #654;
+      background: oklch(0.6 0 0);
 
       &.connected {
-        background: #b84;
+        background: oklch(0.4 0 0);
       }
     }
 
     &.trigger {
-      background: #444;
-      color: #888;
+      background: oklch(0.6 0.1 60);
 
       &.connected {
-        background: #888;
-        color: #111;
+        background: oklch(0.4 0.1 60);
       }
     }
 
