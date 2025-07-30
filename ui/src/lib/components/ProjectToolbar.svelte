@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { editorService, editorTreeString, projectCurrent, projectService, projectUnsaved, routerService, uiService, uiToolbarsVisible } from "$lib/services";
+  import { editorService, editorTree, projectCurrent, projectService, projectUnsaved, routerService, uiService, uiToolbarsVisible } from "$lib/services";
+  import { Uint8Vector } from "$lib/utils";
 
   async function copyProject(): Promise<void> {
     try {
-      await navigator.clipboard.writeText($editorTreeString);
+      await navigator.clipboard.writeText($editorTree.toString());
       uiService.alertInfo("Project copied to clipboard");
     } catch {
       uiService.alertError("Failed to copy project to clipboard");
@@ -13,7 +14,7 @@
   async function pasteProject(): Promise<void> {
     const text = await navigator.clipboard.readText();
     try {
-      editorService.loadTree(text);
+      editorService.loadTree(Uint8Vector.fromString(text));
     } catch (e) {
       uiService.alertError(`${e}`);
     }

@@ -1,24 +1,66 @@
 <script lang="ts">
+  import type { DmxOutput } from "$lib/services/coreService";
+
   interface Props {
     size?: number;
-    address: number;
+    output: DmxOutput;
     dmxData: Array<number>;
   }
 
-  let { size = 8, address, dmxData }: Props = $props();
+  let { size = 8, output, dmxData }: Props = $props();
 
-  const r = $derived(dmxData.at(address) ?? 0);
-  const g = $derived(dmxData.at(address + 1) ?? 0);
-  const b = $derived(dmxData.at(address + 2) ?? 0);
+  const lights = $derived.by(() => {
+    const lights: Array<{ r: number; g: number; b: number; }> = [];
+    for (let i = 0; i < output.count; i++) {
+      const base = output.address + i * 3;
+      lights.push({ r: dmxData.at(base) ?? 0, g: dmxData.at(base + 1) ?? 0, b: dmxData.at(base + 2) ?? 0 });
+    }
+    return lights;
+  });
 </script>
 
-<div
-  class="light"
-  style="--light-size: {size}px; --light-color: rgb({r}, {g}, {b});"
-  title={address.toString(10).padStart(3, "0")}
-></div>
+{#if lights.length === 1}
+  <div
+    class="light"
+    style="--light-size: {size}px; --light-color: rgb({lights.at(0)?.r}, {lights.at(0)?.g}, {lights.at(0)?.b});"
+    title={output.address.toString(10).padStart(3, "0")}
+  ></div>
+{:else if lights.length > 1}
+  <div class="light-group">
+    {#each lights as light, l_i (l_i)}
+      <div
+        class="light"
+        style="--light-size: {size}px; --light-color: rgb({light.r}, {light.g}, {light.b});"
+        title={output.address.toString(10).padStart(3, "0")}
+      ></div>
+    {/each}
+  </div>
+{/if}
 
 <style>
+  .light-group {
+    display: flex;
+    outline: 1px solid #fff1;
+    border-radius: var(--s-xs);
+    background: #fff1;
+    gap: var(--s-xxs);
+
+    .light {
+      flex: 0 0 auto;
+      outline: none;
+
+      &:not(:first-child) {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      &:not(:last-child) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+  }
+
   .light {
     width: var(--light-size);
     height: var(--light-size);

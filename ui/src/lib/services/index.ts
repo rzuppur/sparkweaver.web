@@ -39,7 +39,7 @@ export const coreReady = coreService.ready;
 export const editorNodes = editorService.nodes;
 export const editorSelected = editorService.selected;
 export const editorSelection = editorService.selection;
-export const editorTreeString = editorService.treeString;
+export const editorTree = editorService.tree;
 
 export const projectsList = projectService.projectsList;
 export const projectCurrent = projectService.currentProject;

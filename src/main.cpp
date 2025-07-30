@@ -11,9 +11,9 @@ struct NodeParamBindable {
 };
 
 struct NodeConfigBindable {
-    std::string                    title;
     std::string                    name;
     std::vector<NodeParamBindable> params{};
+    uint8_t                        type_id{};
     uint8_t                        params_count{};
     uint8_t                        max_color_inputs{};
     uint8_t                        max_trigger_inputs{};
@@ -31,21 +31,21 @@ std::vector<NodeConfigBindable> getNodeConfigs()
         }
 
         configs.push_back(
-            {std::string(config.title.data()),
-             std::string(config.name.data()),
+            {std::string(config.name.data()),
              std::move(params),
+             config.type_id,
              config.params_count,
              config.max_color_inputs,
              config.max_trigger_inputs,
-             config.enable_color_outputs,
-             config.enable_trigger_outputs});
+             config.enable_color_outputs == SparkWeaverCore::ColorOutputs::ENABLED,
+             config.enable_trigger_outputs == SparkWeaverCore::TriggerOutputs::ENABLED});
     }
     return configs;
 }
 
 static SparkWeaverCore::Builder builder;
 
-std::string build(const std::string& tree)
+std::string build(const std::vector<uint8_t>& tree)
 {
     try {
         builder.build(tree);
@@ -71,7 +71,7 @@ EMSCRIPTEN_BINDINGS(node_config)
     emscripten::register_vector<NodeParamBindable>("NodeParamVector");
 
     emscripten::value_object<NodeConfigBindable>("NodeConfigBindable")
-        .field("title", &NodeConfigBindable::title)
+        .field("type_id", &NodeConfigBindable::type_id)
         .field("name", &NodeConfigBindable::name)
         .field("params", &NodeConfigBindable::params)
         .field("params_count", &NodeConfigBindable::params_count)
@@ -83,5 +83,6 @@ EMSCRIPTEN_BINDINGS(node_config)
 
     emscripten::function("getNodeConfigs", &getNodeConfigs);
     emscripten::function("build", &build);
+    emscripten::register_vector<uint8_t>("VectorUint8");
     emscripten::function("tick", &tick);
 }

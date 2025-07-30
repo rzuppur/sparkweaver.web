@@ -1,13 +1,14 @@
+import { TREE_FORMAT_VERSION } from "$lib/consts";
 import type { EditorService } from "$lib/services/editorService";
 import type { RouterService } from "$lib/services/routerService";
-import { timestampNow } from "$lib/utils";
+import { timestampNow, Uint8Vector } from "$lib/utils";
 import { nanoid } from "nanoid";
 import { derived, get, type Readable, readonly, writable } from "svelte/store";
 
 export interface Project {
   id: string;
   name: string;
-  tree: string;
+  tree: Uint8Vector;
   created: number;
   modified: number;
 }
@@ -69,7 +70,7 @@ export class ProjectService {
   public loadProject(id: string | undefined): void {
     if (!id) {
       this._currentProject.set(undefined);
-      this.editorService.loadTree("");
+      this.editorService.loadTree(new Uint8Vector([TREE_FORMAT_VERSION]));
     } else {
       const projects = get(this._projectsList);
       const project = projects.find(p => p.id === id);
@@ -95,7 +96,7 @@ export class ProjectService {
       const project: Partial<Project> = {};
       project.id = storage.id;
       project.name = storage.name;
-      project.tree = storage.tree;
+      project.tree = Uint8Vector.fromString(storage.tree);
       project.created = storage.created;
       project.modified = storage.modified;
       return project as Project;
@@ -107,17 +108,17 @@ export class ProjectService {
     return {
       id: nanoid(12),
       name: "New project",
-      tree: "SrColor 255 255 255\nDsDmxRgb 1\nCO 0 1\nCI 1 0\n",
+      tree: new Uint8Vector([TREE_FORMAT_VERSION, 0x60, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x01, 0x00, 0xFE, 0x00, 0x00, 0x01, 0x00, 0xFC, 0x01, 0x00, 0x00, 0x00]),
       created: timestampNow(),
       modified: timestampNow(),
     };
   }
 
-  public updateTree(treeString: string): void {
+  public updateTree(tree: Uint8Vector): void {
     this._currentProject.update(p => (p ? {
       ...p,
       modified: timestampNow(),
-      tree: treeString,
+      tree,
     } : p));
   }
 
@@ -127,7 +128,7 @@ export class ProjectService {
     if (!original) return true;
     return !(
       original.name === $currentProject.name &&
-      original.tree === $currentProject.tree &&
+      original.tree.toString() === $currentProject.tree.toString() &&
       original.created === $currentProject.created
     );
   });

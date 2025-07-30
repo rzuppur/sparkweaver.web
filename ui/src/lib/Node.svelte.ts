@@ -26,8 +26,8 @@ export class Node {
   public readonly uid: number;
 
   constructor(
+    public readonly typeId: number,
     public readonly name: string,
-    public readonly title: string,
     public readonly maxColorInputs: number,
     public readonly maxTriggerInputs: number,
     public readonly enableColorOutputs: boolean,
@@ -55,8 +55,8 @@ export class Node {
         return p;
       });
     return new Node(
+      this.typeId,
       this.name,
-      this.title,
       this.maxColorInputs,
       this.maxTriggerInputs,
       this.enableColorOutputs,

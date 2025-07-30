@@ -1,6 +1,8 @@
 import createModule, { type MainModule } from "$assets/core";
+import { TYPE_DS_RANGE } from "$lib/consts";
 import type { EditorService } from "$lib/services/editorService";
 import type { UiService } from "$lib/services/uiService";
+import { inRange, Uint8Vector } from "$lib/utils";
 import { get, readonly, writable } from "svelte/store";
 
 interface NodeParam {
@@ -11,7 +13,7 @@ interface NodeParam {
 }
 
 interface NodeType {
-  title: string;
+  type_id: number;
   name: string;
   params: Array<NodeParam>;
   max_color_inputs: number;
@@ -27,8 +29,9 @@ export enum CoreSimulationState {
   ERROR,
 }
 
-interface DmxOutput {
+export interface DmxOutput {
   address: number;
+  count: number;
 }
 
 export class CoreService {
@@ -98,8 +101,8 @@ export class CoreService {
         }
         nodeTypes.push({
           ...config,
+          type_id: config.type_id,
           name: typeof config.name === "string" ? config.name : "",
-          title: typeof config.title === "string" ? config.title : "",
           params,
         });
       }
@@ -109,17 +112,17 @@ export class CoreService {
     this._nodeTypes.set(nodeTypes);
   }
 
-  public buildTree(treeString: string): void {
+  public buildTree(tree: Uint8Vector): void {
     if (!this.module) return;
-    const result = this.module.build(treeString);
+    using vector = new this.module.VectorUint8();
+    for (const byte of tree.get()) {
+      vector.push_back(byte);
+    }
+    const result = this.module.build(vector);
     if (result === "OK") {
-      const outputs: Array<DmxOutput> = [];
-      for (const [command, params] of this.editorService.treeStringToParts(treeString)) {
-        if (command === "DsDmxRgb" && params.length) {
-          outputs.push({ address: params[0] });
-        }
-      }
-      this._simulationOutputs.set(outputs);
+      this._simulationOutputs.set(get(this.editorService.nodes).filter(n => inRange(n.typeId, TYPE_DS_RANGE)).map(n => {
+        return { address: n.params[0].value, count: n.colorInputs.length };
+      }));
       this.runSimulationTick();
       this._simulationTick.set(0);
       this._simulationState.set(CoreSimulationState.PAUSED);

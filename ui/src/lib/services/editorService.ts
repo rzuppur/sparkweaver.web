@@ -1,9 +1,11 @@
+import { COMMAND_COLOR_INPUT, COMMAND_COLOR_OUTPUT, COMMAND_TRIGGER_INPUT, COMMAND_TRIGGER_OUTPUT, TREE_FORMAT_VERSION } from "$lib/consts";
 import { type AnchorType, Node } from "$lib/Node.svelte.js";
 import { NodeParam } from "$lib/NodeParam.svelte.js";
 import type { CoreService } from "$lib/services/coreService";
 import { uiService } from "$lib/services/index";
 import type { ProjectService } from "$lib/services/projectService";
 import type { UiService } from "$lib/services/uiService";
+import { Uint8Vector } from "$lib/utils";
 import { derived, get, readonly, writable } from "svelte/store";
 
 export class EditorService {
@@ -32,28 +34,18 @@ export class EditorService {
   }
 
   public init(): void {
-    this.treeString.subscribe(tree => {
+    this.tree.subscribe(tree => {
       this.projectService.updateTree(tree);
     });
   }
 
-  private static sortNodes(a: Node, b: Node): number {
-    const typeOrder = ["Sr", "Tr", "Fx", "Mx", "Ds"];
-    const typeA = a.name.substring(0, 2);
-    const typeB = b.name.substring(0, 2);
-    return typeOrder.indexOf(typeA) - typeOrder.indexOf(typeB);
-  }
-
   private setNodes(newNodes: Array<Node>): void {
-    newNodes.sort(EditorService.sortNodes);
     this._nodes.set(newNodes);
   }
 
   private updateNodes(updater: (nodes: Array<Node>) => Array<Node>): void {
     this._nodes.update((nodes) => {
-      const newNodes = updater(nodes);
-      newNodes.sort(EditorService.sortNodes);
-      return newNodes;
+      return updater(nodes);
     });
   }
 
@@ -67,59 +59,42 @@ export class EditorService {
    * Derived reactivity is not deep, including `this.selected` is a workaround to pick up parameter changes from the UI
    * of the currently selected node. It will break when the parameters of an unselected node are changed.
    */
-  public readonly treeString = derived([this.nodes, this.selected], ([$nodes]) => {
-    let t = "";
+  public readonly tree = derived([this.nodes, this.selected], ([$nodes]) => {
+    const t = new Uint8Vector([TREE_FORMAT_VERSION]);
     for (const node of $nodes) {
-      t += `${node.name}`;
+      t.pushBack(node.typeId);
       for (const param of node.params) {
-        t += ` ${param.value}`;
+        t.pushBack(param.value & 0xFF);
+        t.pushBack((param.value >> 8) & 0xFF);
       }
-      t += "\n";
     }
     for (const node of $nodes) {
       const myIndex = $nodes.indexOf(node);
-      if (node.colorInputs.length) {
-        t += `CI ${myIndex}`;
-        for (const colorInput of node.colorInputs) {
-          const i = $nodes.indexOf(colorInput);
-          if (i >= 0) t += ` ${i}`;
+      for (const [others, command] of [
+        [node.colorInputs, COMMAND_COLOR_INPUT] as const,
+        [node.colorOutputs, COMMAND_COLOR_OUTPUT] as const,
+        [node.triggerInputs, COMMAND_TRIGGER_INPUT] as const,
+        [node.triggerOutputs, COMMAND_TRIGGER_OUTPUT] as const,
+      ]) {
+        for (const other of others) {
+          t.pushBack(command);
+          t.pushBack(myIndex & 0xFF);
+          t.pushBack((myIndex >> 8) & 0xFF);
+          const otherIndex = $nodes.indexOf(other);
+          t.pushBack(otherIndex & 0xFF);
+          t.pushBack((otherIndex >> 8) & 0xFF);
         }
-        t += "\n";
-      }
-      if (node.colorOutputs.length) {
-        t += `CO ${myIndex}`;
-        for (const colorOutput of node.colorOutputs) {
-          const i = $nodes.indexOf(colorOutput);
-          if (i >= 0) t += ` ${i}`;
-        }
-        t += "\n";
-      }
-      if (node.triggerInputs.length) {
-        t += `TI ${myIndex}`;
-        for (const triggerInput of node.triggerInputs) {
-          const i = $nodes.indexOf(triggerInput);
-          if (i >= 0) t += ` ${i}`;
-        }
-        t += "\n";
-      }
-      if (node.triggerOutputs.length) {
-        t += `TO ${myIndex}`;
-        for (const triggerOutput of node.triggerOutputs) {
-          const i = $nodes.indexOf(triggerOutput);
-          if (i >= 0) t += ` ${i}`;
-        }
-        t += "\n";
       }
     }
     return t;
   });
 
-  private nodeFromName(name: string): Node | undefined {
-    const nodeType = get(this.coreService.nodeTypes).find(type => type.name === name);
+  private nodeFromType(typeId: number): Node | undefined {
+    const nodeType = get(this.coreService.nodeTypes).find(type => type.type_id === typeId);
     if (nodeType) {
       return new Node(
+        nodeType.type_id,
         nodeType.name,
-        nodeType.title,
         nodeType.max_color_inputs,
         nodeType.max_trigger_inputs,
         nodeType.enable_color_outputs,
@@ -127,25 +102,11 @@ export class EditorService {
         nodeType.params.map(p => new NodeParam(p.name, p.min, p.max, p.default_value)),
       );
     } else {
-      this.uiService.alertError(`Unknown node ${name}`);
+      this.uiService.alertError(`Unknown node ${typeId}`);
     }
   }
 
-  public treeStringToParts(treeString: string): Array<[string, Array<number>, number]> {
-    const result: Array<[string, Array<number>, number]> = [];
-    let commandIndex = 0;
-    for (let line of treeString.split("\n")) {
-      line = line.trim();
-      if (!line) continue;
-      const [command, ...params] = line.split(" ");
-      const numberParams = params.map(p => Number.parseInt(p, 10));
-      if (numberParams.some(n => Number.isNaN(n))) continue;
-      result.push([command, numberParams, commandIndex++]);
-    }
-    return result;
-  }
-
-  public loadTree(treeString: string): void {
+  public loadTree(tree: Uint8Vector): void {
     if (this.coreReadyUnsubscribe) {
       this.coreReadyUnsubscribe();
       this.coreReadyUnsubscribe = undefined;
@@ -154,31 +115,102 @@ export class EditorService {
     this.coreReadyUnsubscribe = this.coreService.ready.subscribe((ready) => {
       if (ready) {
         this.coreReadyUnsubscribe?.();
+        const nodeTypes = get(this.coreService.nodeTypes);
         const nodes: Array<Node> = [];
-        for (const [command, params, commandIndex] of this.treeStringToParts(treeString)) {
-          try {
-            if (command === "CI" || command === "CO" || command === "TI" || command === "TO") {
-              const connections = structuredClone(params);
-              if (connections.length < 2) continue;
-              const source = nodes.at(connections.shift() as number);
-              for (const connection of connections) {
-                if (command === "CI") source?.addColorInput(nodes.at(connection)!);
-                else if (command === "CO") source?.addColorOutput(nodes.at(connection)!);
-                else if (command === "TI") source?.addTriggerInput(nodes.at(connection)!);
-                else if (command === "TO") source?.addTriggerOutput(nodes.at(connection)!);
-              }
-            } else {
-              const newNode = this.nodeFromName(command);
-              if (newNode) {
-                for (let i = 0; i < newNode.params.length; i++) {
-                  newNode.params[i].value = params[i];
-                }
-                nodes.push(newNode);
+        let chrPos = 0;
+        let command = 0;
+        let paramsLeft = 0;
+        let paramLsb = 0;
+        let params: Array<number> = [];
+        try {
+          for (const byte of tree.get()) {
+            // CHECK VERSION
+            if (chrPos === 0) {
+              if (byte !== TREE_FORMAT_VERSION) {
+                uiService.alertError("Tree version invalid");
+                break;
               }
             }
-          } catch (e) {
-            uiService.alertError(`[${commandIndex} : ${command} ${params.join(" ")}] ${e}`);
+
+            // PARSE PARAMS
+            else if (paramsLeft > 0) {
+              // APPEND PARAM
+              if (paramsLeft % 2 === 0) {
+                paramLsb = byte;
+              } else {
+                params.push(byte << 8 | paramLsb);
+              }
+              --paramsLeft;
+
+              // EXECUTE COMMAND
+              if (paramsLeft === 0) {
+                // CONNECTION
+                if (command === COMMAND_COLOR_INPUT || command === COMMAND_TRIGGER_INPUT ||
+                  command === COMMAND_COLOR_OUTPUT || command === COMMAND_TRIGGER_OUTPUT) {
+                  const [from, to] = params;
+                  if (from >= nodes.length || to >= nodes.length || from === to) {
+                    uiService.alertError(`Invalid connection at position ${chrPos}`);
+                    break;
+                  }
+                  if (command === COMMAND_COLOR_INPUT) {
+                    nodes.at(from)!.addColorInput(nodes.at(to)!);
+                  } else if (command === COMMAND_COLOR_OUTPUT) {
+                    nodes.at(from)!.addColorOutput(nodes.at(to)!);
+                  } else if (command === COMMAND_TRIGGER_INPUT) {
+                    nodes.at(from)!.addTriggerInput(nodes.at(to)!);
+                  } else if (command === COMMAND_TRIGGER_OUTPUT) {
+                    nodes.at(from)!.addTriggerOutput(nodes.at(to)!);
+                  }
+                }
+
+                // NODE
+                else {
+                  const newNode = this.nodeFromType(command);
+                  if (newNode) {
+                    for (let i = 0; i < newNode.params.length; i++) {
+                      newNode.params[i].value = params[i];
+                    }
+                    nodes.push(newNode);
+                  }
+                }
+              }
+            }
+
+            // PARSE COMMAND
+            else {
+              params = [];
+              command = byte;
+              const config = nodeTypes.find(node => node.type_id === command);
+
+              // CONNECTION
+              if (command === COMMAND_COLOR_INPUT || command === COMMAND_TRIGGER_INPUT ||
+                command === COMMAND_COLOR_OUTPUT || command === COMMAND_TRIGGER_OUTPUT) {
+                paramsLeft = 2 * 2;
+              }
+
+              // NODE
+              else if (config) {
+                if (config.params.length > 0) {
+                  paramsLeft = config.params.length * 2;
+                } else {
+                  const newNode = this.nodeFromType(command);
+                  if (newNode) {
+                    nodes.push(newNode);
+                  }
+                }
+              }
+
+              // INVALID
+              else {
+                uiService.alertError(`Invalid command at position ${chrPos}: ${command}`);
+                break;
+              }
+            }
+
+            ++chrPos;
           }
+        } catch (e) {
+          uiService.alertError(`Tree error at position ${chrPos}: ${e}`);
         }
 
         this.reset();
@@ -224,8 +256,8 @@ export class EditorService {
     this.selected.set(node);
   }
 
-  public addNewNode(name: string): Node | undefined {
-    const newNode = this.nodeFromName(name);
+  public addNewNode(typeId: number): Node | undefined {
+    const newNode = this.nodeFromType(typeId);
     if (newNode) this.addNode(newNode);
     return newNode;
   }

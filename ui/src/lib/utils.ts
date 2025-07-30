@@ -20,6 +20,46 @@ export function mergeUint8Arrays(a1: Uint8Array, a2: Uint8Array): Uint8Array<Arr
   return result;
 }
 
+export class Uint8Vector {
+  private buffer = new Uint8Array(1);
+  private length = 0;
+
+  constructor(value: Array<number> = []) {
+    for (const byte of value) {
+      this.pushBack(byte);
+    }
+  }
+
+  public get(): Uint8Array {
+    return this.buffer.subarray(0, this.length);
+  }
+
+  public pushBack(element: number): void {
+    if (this.buffer.length === this.length) {
+      const buffer = new Uint8Array(this.buffer.length * 2);
+      buffer.set(this.buffer);
+      this.buffer = buffer;
+    }
+    this.buffer[this.length++] = element;
+  }
+
+  public clear(): void {
+    this.length = 0;
+  }
+
+  public toString(): string {
+    return btoa(String.fromCharCode(...this.get()));
+  }
+
+  public toJSON(): string {
+    return this.toString();
+  }
+
+  public static fromString(string: string): Uint8Vector {
+    return new Uint8Vector([...atob(string)].map(c => c.charCodeAt(0)));
+  }
+}
+
 export function toDate(date: string | number | Date | dayjs.Dayjs | null | undefined) {
   return dayjs(date);
 }
@@ -35,4 +75,8 @@ export function dateRelativeAutomatic(date: string | number | Date | dayjs.Dayjs
 
 export function timestampNow(): number {
   return (new Date()).getTime();
+}
+
+export function inRange(value: number, [from, to]: readonly [number, number]): boolean {
+  return value >= from && value <= to;
 }

@@ -3,8 +3,6 @@
   import EditorParams from "$lib/components/EditorParams.svelte";
   import { Node } from "$lib/Node.svelte.js";
   import { coreNodeTypes, coreSimulationDmxData, editorSelected, editorSelection, editorService } from "$lib/services";
-  import { cubicOut } from "svelte/easing";
-  import { slide } from "svelte/transition";
 
   interface Props {
     node: Node;
@@ -31,32 +29,33 @@
   );
 
   const nodeTitle = $derived.by(() => {
-    if (nodeType?.name === "DsDmxRgb") {
-      return `DMX ${node.params[0].value.toString(10).padStart(3, "0")}`;
-    } else if (nodeType?.name === "SrColor") {
-      return `${node.params[0].value}, ${node.params[1].value}, ${node.params[2].value}`;
-    } else if (nodeType?.name === "TrCycle") {
-      return `Cycle (${estimateTime(node.params[0].value)})`;
-    } else if (nodeType?.name === "TrRandom") {
-      return `Random (${estimateTime(node.params[0].value)}-${estimateTime(node.params[1].value)})`;
-    } else if (nodeType?.name === "FxPulse") {
-      return `Pulse (${estimateTime(node.params[0].value)} - ${estimateTime(node.params[1].value)} - ${estimateTime(node.params[2].value)})`;
-    } else if (nodeType?.name === "FxStrobe") {
-      return `Strobe pulse (${estimateTime(node.params[0].value)})`;
-    } else if (nodeType?.name === "FxBreathe") {
-      return `Breathe (${estimateTime(node.params[0].value)}) +${Math.round(360 * (node.params[1].value % node.params[0].value) / node.params[0].value)}° ${Math.round((node.params[2].value / 255) * 100)}%`;
-    } else if (nodeType?.name === "TrDelay") {
-      return `Delay (${estimateTime(node.params[0].value)})`;
-    } else if (nodeType?.name === "TrChance") {
-      return `${nodeType?.title} (${Math.round(100 * node.params[0].value / 65535)}%)`;
-    } else if (nodeType?.name === "TrSequence") {
-      return node.params[0].value ? "Random sequence" : "Sequence";
-    } else if (nodeType?.name === "MxAdd") {
-      return "Add";
-    } else if (nodeType?.name === "MxSubtract") {
-      return "Subtract";
+    switch (nodeType?.type_id) {
+      case 0x00:
+        if (node.colorInputs.length > 1) {
+          return `DMX ${node.params[0].value.toString(10).padStart(3, "0")}-${Math.min(512, (node.params[0].value + 2) + (node.colorInputs.length - 1) * 3).toString(10).padStart(3, "0")}`;
+        }
+        return `DMX ${node.params[0].value.toString(10).padStart(3, "0")}-${Math.min(512, node.params[0].value + 2).toString(10).padStart(3, "0")}`;
+      case 0x20:
+        return `Breathe (${estimateTime(node.params[0].value)}) +${Math.round(360 * (node.params[1].value % node.params[0].value) / node.params[0].value)}° ${Math.round((node.params[2].value / 255) * 100)}%`;
+      case 0x21:
+        return `Pulse (${estimateTime(node.params[0].value)} - ${estimateTime(node.params[1].value)} - ${estimateTime(node.params[2].value)})`;
+      case 0x22:
+        return `Strobe (${estimateTime(node.params[0].value)})`;
+      case 0x60:
+        return `${node.params[0].value}, ${node.params[1].value}, ${node.params[2].value}`;
+      case 0x80:
+        return `Chance (${Math.round(100 * node.params[0].value / 65535)}%)`;
+      case 0x81:
+        return `Cycle (${estimateTime(node.params[0].value)})`;
+      case 0x82:
+        return `Delay (${estimateTime(node.params[0].value)})`;
+      case 0x83:
+        return `Random (${estimateTime(node.params[0].value)}-${estimateTime(node.params[1].value)})`;
+      case 0x84:
+        return node.params[0].value ? "Random sequence" : "Sequence";
+      default:
+        return `${nodeType?.name}`;
     }
-    return `${nodeType?.title}`;
   });
 
   function select(event: MouseEvent | KeyboardEvent): void {
@@ -78,7 +77,7 @@
 
 <div
   bind:this={node.element}
-  class="node {`type-${nodeType?.name.substring(0, 2).toLocaleLowerCase()}`}"
+  class="node"
   class:selected={isSelected}
   class:hide={hideFromSelection}
   class:other-selected={otherSelected}
@@ -93,13 +92,13 @@
   </div>
   <div class="content">
     <div class="header" onclick={select} role="button" tabindex="0" onkeydown={select}>
-      {#if node.name === "SrColor"}
+      {#if node.typeId === 0x60}
         {@const red = node.params.find(p => p.name === "red")?.value}
         {@const green = node.params.find(p => p.name === "green")?.value}
         {@const blue = node.params.find(p => p.name === "blue")?.value}
         <div class="color-preview" style:background-color={`rgb(${red ?? 0}, ${green ?? 0}, ${blue ?? 0})`}></div>
       {/if}
-      {#if node.name === "DsDmxRgb"}
+      {#if node.typeId === 0x00}
         {@const address = node.params.find(p => p.name === "address")?.value}
         {@const red = $coreSimulationDmxData.at(address ?? 0)}
         {@const green = $coreSimulationDmxData.at((address ?? 0) + 1)}
@@ -109,7 +108,7 @@
       <div class="name">{nodeTitle}</div>
     </div>
     {#if isSelected}
-      <div transition:slide={{ duration: 240, easing: cubicOut }} class="params">
+      <div class="params">
         <EditorParams></EditorParams>
       </div>
     {/if}
@@ -136,27 +135,27 @@
     --header-color: oklch(0.25 0 0);
     --header-color-focus: oklch(0.3 0 0);
 
-    &.type-sr {
+    :global(.type-source) & {
       --header-color: oklch(0.3 0.05 260);
       --header-color-focus: oklch(0.35 0.05 260);
     }
 
-    &.type-tr {
+    :global(.type-trigger) & {
       --header-color: oklch(0.3 0.05 60);
       --header-color-focus: oklch(0.35 0.05 60);
     }
 
-    &.type-fx {
+    :global(.type-effect) & {
       --header-color: oklch(0.3 0.05 120);
       --header-color-focus: oklch(0.35 0.05 120);
     }
 
-    &.type-mx {
+    :global(.type-mix) & {
       --header-color: oklch(0.3 0.05 300);
       --header-color-focus: oklch(0.35 0.05 300);
     }
 
-    &.type-ds {
+    :global(.type-destination) & {
       --header-color: oklch(0.3 0.05 190);
       --header-color-focus: oklch(0.35 0.05 260);
     }

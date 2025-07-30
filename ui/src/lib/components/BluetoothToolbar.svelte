@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { bluetoothPwNeedsChanging, bluetoothService, bluetoothState, editorService, editorTreeString, uiService } from "$lib/services";
+  import { bluetoothPwNeedsChanging, bluetoothService, bluetoothState, editorService, editorTree, uiService } from "$lib/services";
   import { BluetoothState, CHR_PW, CHR_TREE, readInChunks, writeInChunks } from "$lib/services/bluetoothService";
+  import { Uint8Vector } from "$lib/utils";
   import { get } from "svelte/store";
 
   let newPw = $state("");
@@ -31,7 +32,7 @@
     });
     if (data) {
       try {
-        editorService.loadTree(String.fromCharCode(...data));
+        editorService.loadTree(new Uint8Vector([...data]));
       } catch (e) {
         uiService.alertError(`${e}`);
       }
@@ -40,8 +41,8 @@
 
   async function sendToDevice(): Promise<void> {
     await bluetoothService.request(async (service) => {
-      const treeString = get(editorTreeString);
-      await writeInChunks(service, CHR_TREE, new TextEncoder().encode(treeString));
+      const tree = get(editorTree);
+      await writeInChunks(service, CHR_TREE, tree.get());
     });
   }
 </script>

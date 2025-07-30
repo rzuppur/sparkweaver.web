@@ -1,17 +1,19 @@
 <script lang="ts">
   import EditorNode from "$lib/components/EditorNode.svelte";
+  import { TYPE_DS_RANGE, TYPE_FX_RANGE, TYPE_MX_RANGE, TYPE_SR_RANGE, TYPE_TR_RANGE } from "$lib/consts";
   import { coreNodeTypes, editorNodes, editorSelected, editorSelection, editorService } from "$lib/services";
+  import { inRange } from "$lib/utils.js";
   import { onMount } from "svelte";
 
-  function addNode(nodeType: string): void {
-    editorService.addNewNode(nodeType);
+  function addNode(typeId: number): void {
+    editorService.addNewNode(typeId);
   }
 
-  const sourceTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Sr")).sort((a, b) => a.title.localeCompare(b.title)));
-  const triggerTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Tr")).sort((a, b) => a.title.localeCompare(b.title)));
-  const effectTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Fx")).sort((a, b) => a.title.localeCompare(b.title)));
-  const mixTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Mx")).sort((a, b) => a.title.localeCompare(b.title)));
-  const destinationTypes = $derived($coreNodeTypes.filter(n => n.name.startsWith("Ds")).sort((a, b) => a.title.localeCompare(b.title)));
+  const sourceTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_SR_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
+  const triggerTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_TR_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
+  const effectTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_FX_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
+  const mixTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_MX_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
+  const destinationTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_DS_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
 
   let columnsEl = $state<HTMLElement>();
   let columnsWidth = $state(0);
@@ -34,11 +36,11 @@
     };
   });
 
-  const sourceNodes = $derived($editorNodes.filter(n => n.name.startsWith("Sr")));
-  const triggerNodes = $derived($editorNodes.filter(n => n.name.startsWith("Tr")));
-  const effectNodes = $derived($editorNodes.filter(n => n.name.startsWith("Fx")));
-  const mixNodes = $derived($editorNodes.filter(n => n.name.startsWith("Mx")));
-  const destinationNodes = $derived($editorNodes.filter(n => n.name.startsWith("Ds")));
+  const sourceNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_SR_RANGE)));
+  const triggerNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_TR_RANGE)));
+  const effectNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_FX_RANGE)));
+  const mixNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_MX_RANGE)));
+  const destinationNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_DS_RANGE)));
 
   const lineOpacity = $derived($editorSelected ? 0.07 : 0.4);
   const selectedUid = $derived($editorSelected?.uid);
@@ -89,86 +91,86 @@
     {/each}
   </svg>
   <div bind:this={columnsEl} class="columns">
-    <div class="column">
+    <div class="column type-source">
       <div class="column-title">Source</div>
       {#each sourceNodes as node (node.uid)}
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
         {#each sourceTypes as nodeType (nodeType.name)}
-          <button type="button" onclick={() => addNode(nodeType.name)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
+          <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
             </svg>
-            <span class="button-label">{nodeType.title}</span>
+            <span class="button-label">{nodeType.name}</span>
           </button>
         {/each}
       </div>
       <div class="column-footer"></div>
     </div>
-    <div class="column">
+    <div class="column type-trigger">
       <div class="column-title">Trigger</div>
       {#each triggerNodes as node (node.uid)}
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
         {#each triggerTypes as nodeType (nodeType.name)}
-          <button type="button" onclick={() => addNode(nodeType.name)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
+          <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
             </svg>
-            <span class="button-label">{nodeType.title}</span>
+            <span class="button-label">{nodeType.name}</span>
           </button>
         {/each}
       </div>
       <div class="column-footer"></div>
     </div>
-    <div class="column">
+    <div class="column type-effect">
       <div class="column-title">Effect</div>
       {#each effectNodes as node (node.uid)}
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
         {#each effectTypes as nodeType (nodeType.name)}
-          <button type="button" onclick={() => addNode(nodeType.name)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
+          <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
             </svg>
-            <span class="button-label">{nodeType.title}</span>
+            <span class="button-label">{nodeType.name}</span>
           </button>
         {/each}
       </div>
       <div class="column-footer"></div>
     </div>
-    <div class="column">
+    <div class="column type-mix">
       <div class="column-title">Mix</div>
       {#each mixNodes as node (node.uid)}
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
         {#each mixTypes as nodeType (nodeType.name)}
-          <button type="button" onclick={() => addNode(nodeType.name)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
+          <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
             </svg>
-            <span class="button-label">{nodeType.title}</span>
+            <span class="button-label">{nodeType.name}</span>
           </button>
         {/each}
       </div>
       <div class="column-footer"></div>
     </div>
-    <div class="column">
+    <div class="column type-destination">
       <div class="column-title">Destination</div>
       {#each destinationNodes as node (node.uid)}
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
         {#each destinationTypes as nodeType (nodeType.name)}
-          <button type="button" onclick={() => addNode(nodeType.name)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
+          <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
             </svg>
-            <span class="button-label">{nodeType.title}</span>
+            <span class="button-label">{nodeType.name}</span>
           </button>
         {/each}
       </div>
@@ -178,7 +180,6 @@
 </div>
 
 <style>
-
   .add-button {
     height: 32px;
     width: 100%;
