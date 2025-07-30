@@ -1,6 +1,6 @@
 import { readonly, writable } from "svelte/store";
 
-type UiToolbars = "bluetooth" | "simulation";
+type UiToolbars = "bluetooth" | "simulation" | "debug";
 
 export class UiService {
   private readonly UI_TOOLBARS_KEY = "sw_toolbars";

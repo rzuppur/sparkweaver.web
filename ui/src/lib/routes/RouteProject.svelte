@@ -1,5 +1,6 @@
 <script lang="ts">
   import BluetoothToolbar from "$lib/components/BluetoothToolbar.svelte";
+  import DebugToolbar from "$lib/components/DebugToolbar.svelte";
   import EditorCanvas from "$lib/components/EditorCanvas.svelte";
   import ProjectToolbar from "$lib/components/ProjectToolbar.svelte";
   import SimulationToolbar from "$lib/components/SimulationToolbar.svelte";
@@ -24,6 +25,11 @@
     <div class="canvas">
       <EditorCanvas></EditorCanvas>
     </div>
+    {#if $uiToolbarsVisible.has("debug")}
+      <div class="toolbar-xl">
+        <DebugToolbar></DebugToolbar>
+      </div>
+    {/if}
   </div>
 </main>
 
@@ -67,7 +73,13 @@
       }
 
       .canvas {
-        flex: 1 1 auto;
+        flex: 1 1 1px;
+      }
+
+      .toolbar-xl {
+        max-height: 160px;
+        grid-column: 1 / -1;
+        flex: 1 1 1px;
       }
     }
   }

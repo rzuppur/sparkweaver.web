@@ -22,7 +22,8 @@ export function mergeUint8Arrays(a1: Uint8Array, a2: Uint8Array): Uint8Array<Arr
 
 export class Uint8Vector {
   private buffer = new Uint8Array(1);
-  private length = 0;
+  private _length = 0;
+  public get length(): number { return this._length; }
 
   constructor(value: Array<number> = []) {
     for (const byte of value) {
@@ -31,20 +32,20 @@ export class Uint8Vector {
   }
 
   public get(): Uint8Array {
-    return this.buffer.subarray(0, this.length);
+    return this.buffer.subarray(0, this._length);
   }
 
   public pushBack(element: number): void {
-    if (this.buffer.length === this.length) {
+    if (this.buffer.length === this._length) {
       const buffer = new Uint8Array(this.buffer.length * 2);
       buffer.set(this.buffer);
       this.buffer = buffer;
     }
-    this.buffer[this.length++] = element;
+    this.buffer[this._length++] = element;
   }
 
   public clear(): void {
-    this.length = 0;
+    this._length = 0;
   }
 
   public toString(): string {
