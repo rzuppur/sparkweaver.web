@@ -150,6 +150,31 @@ export class ProjectService {
     }
   }
 
+  public copyCurrentProject(): string {
+    const current = get(this._currentProject);
+    if (current) {
+      return JSON.stringify({
+        name: current.name,
+        tree: current.tree.toJSON(),
+      });
+    }
+    return "";
+  }
+
+  public pasteCurrentProject(text: string): void {
+    const current = get(this._currentProject);
+    if (!current) throw new Error("No project loaded");
+    const project = JSON.parse(text);
+    if (
+      "name" in project && typeof project.name === "string" &&
+      "tree" in project && typeof project.tree === "string") {
+      this.setCurrentProjectName(project.name);
+      this.editorService.loadTree(Uint8Vector.fromString(project.tree));
+    } else {
+      throw new Error("Invalid project format");
+    }
+  }
+
   public setCurrentProjectName(name: string): void {
     this._currentProject.update(p => (p ? { ...p, name } : p));
   }

@@ -6,7 +6,9 @@
   import { onMount } from "svelte";
 
   function addNode(typeId: number): void {
-    editorService.addNewNode(typeId);
+    setTimeout(() => {
+      editorService.addNewNode(typeId);
+    }, 0); // Firefox sometimes sends double click events without the delay
   }
 
   const sourceTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_SR_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
@@ -51,7 +53,7 @@
   }
 
   function getLineColor(line: [number, number, string]) {
-    const [,fromUid] = line;
+    const [, fromUid] = line;
     if (sourceNodes.some(n => n.uid === fromUid)) return "oklch(0.6 0.1 260)";
     if (triggerNodes.some(n => n.uid === fromUid)) return "oklch(0.6 0.1 60)";
     if (effectNodes.some(n => n.uid === fromUid)) return "oklch(0.6 0.1 120)";
@@ -97,7 +99,7 @@
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
-        {#each sourceTypes as nodeType (nodeType.name)}
+        {#each sourceTypes as nodeType (nodeType.type_id)}
           <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -114,7 +116,7 @@
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
-        {#each triggerTypes as nodeType (nodeType.name)}
+        {#each triggerTypes as nodeType (nodeType.type_id)}
           <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -131,7 +133,7 @@
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
-        {#each effectTypes as nodeType (nodeType.name)}
+        {#each effectTypes as nodeType (nodeType.type_id)}
           <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -148,7 +150,7 @@
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
-        {#each mixTypes as nodeType (nodeType.name)}
+        {#each mixTypes as nodeType (nodeType.type_id)}
           <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
@@ -165,7 +167,7 @@
         <EditorNode {node}></EditorNode>
       {/each}
       <div>
-        {#each destinationTypes as nodeType (nodeType.name)}
+        {#each destinationTypes as nodeType (nodeType.type_id)}
           <button type="button" onclick={() => addNode(nodeType.type_id)} class="add-button" disabled={!!($editorSelection.from || $editorSelection.to)}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>

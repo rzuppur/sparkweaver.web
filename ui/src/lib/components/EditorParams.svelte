@@ -2,15 +2,19 @@
   import { editorSelected, editorService } from "$lib/services";
 
   function duplicateNode(): void {
-    if ($editorSelected) {
-      editorService.addNode($editorSelected.clone());
-    }
+    setTimeout(() => {
+      if ($editorSelected) {
+        editorService.addNode($editorSelected.clone());
+      }
+    }, 0); // Firefox sometimes sends double click events without the delay
   }
 
   function deleteNode(): void {
-    if ($editorSelected) {
-      editorService.removeNode($editorSelected);
-    }
+    setTimeout(() => {
+      if ($editorSelected) {
+        editorService.removeNode($editorSelected);
+      }
+    }, 0); // Firefox sometimes sends double click events without the delay
   }
 </script>
 
