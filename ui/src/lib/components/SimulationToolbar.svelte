@@ -1,6 +1,6 @@
 <script lang="ts">
   import SimulationLight from "$lib/components/SimulationLight.svelte";
-  import { coreReady, coreService, coreSimulationDmxData, coreSimulationOutputs, coreSimulationState, coreSimulationTick, editorTree } from "$lib/services";
+  import { coreExternalTriggers, coreReady, coreService, coreSimulationDmxData, coreSimulationOutputs, coreSimulationState, coreSimulationTick, editorTree } from "$lib/services";
   import { CoreSimulationState } from "$lib/services/coreService";
   import { onMount } from "svelte";
 
@@ -94,6 +94,13 @@
           </svg>
         </button>
       {/if}
+      {#each $coreExternalTriggers as trigger, t_i (t_i)}
+        <button type="button" onclick={() => coreService.triggerExternalTrigger(trigger)} style="width: auto; padding: 0 var(--s-sm);" title="External trigger">
+          <span class="toolbar-label">
+            {trigger.toFixed(0).padStart(3, "0")}
+          </span>
+        </button>
+      {/each}
     </div>
     <div style="flex: 1 1 auto;"></div>
     {#if $coreSimulationOutputs.length}
@@ -154,6 +161,10 @@
         height: 20px;
         display: block;
         flex: 0 0 auto;
+      }
+
+      .toolbar-label {
+        opacity: 0.6;
       }
     }
   }

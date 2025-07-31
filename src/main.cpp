@@ -21,6 +21,8 @@ struct NodeConfigBindable {
     bool                           enable_trigger_outputs{};
 };
 
+static SparkWeaverCore::Engine engine;
+
 std::vector<NodeConfigBindable> getNodeConfigs()
 {
     std::vector<NodeConfigBindable> configs;
@@ -31,24 +33,18 @@ std::vector<NodeConfigBindable> getNodeConfigs()
         }
 
         configs.push_back(
-            {std::string(config.name.data()),
-             std::move(params),
-             config.type_id,
-             config.params_count,
-             config.max_color_inputs,
-             config.max_trigger_inputs,
-             config.enable_color_outputs == SparkWeaverCore::ColorOutputs::ENABLED,
-             config.enable_trigger_outputs == SparkWeaverCore::TriggerOutputs::ENABLED});
+        {std::string(config.name.data()), std::move(params), config.type_id, config.params_count,
+         config.max_color_inputs, config.max_trigger_inputs,
+         config.enable_color_outputs == SparkWeaverCore::ColorOutputs::ENABLED,
+         config.enable_trigger_outputs == SparkWeaverCore::TriggerOutputs::ENABLED});
     }
     return configs;
 }
 
-static SparkWeaverCore::Builder builder;
-
 std::string build(const std::vector<uint8_t>& tree)
 {
     try {
-        builder.build(tree);
+        engine.build(tree);
         return "OK";
     } catch (const std::exception& e) {
         return e.what();
@@ -57,8 +53,18 @@ std::string build(const std::vector<uint8_t>& tree)
 
 emscripten::val tick()
 {
-    const auto p_data = builder.tick();
+    const auto p_data = engine.tick();
     return emscripten::val(emscripten::typed_memory_view(513, p_data));
+}
+
+std::vector<uint8_t> listExternalTriggers()
+{
+    return engine.listExternalTriggers();
+}
+
+void triggerExternalTrigger(const uint8_t id)
+{
+    engine.triggerExternalTrigger(id);
 }
 
 EMSCRIPTEN_BINDINGS(node_config)
@@ -85,4 +91,6 @@ EMSCRIPTEN_BINDINGS(node_config)
     emscripten::function("build", &build);
     emscripten::register_vector<uint8_t>("VectorUint8");
     emscripten::function("tick", &tick);
+    emscripten::function("listExternalTriggers", &listExternalTriggers);
+    emscripten::function("triggerExternalTrigger", &triggerExternalTrigger);
 }

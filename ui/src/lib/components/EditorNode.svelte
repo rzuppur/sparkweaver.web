@@ -43,6 +43,8 @@
         return `${estimateTime(node.params[0].value)}`;
       case 0x60:
         return `${node.params[0].value}, ${node.params[1].value}, ${node.params[2].value}`;
+      case 0x61:
+        return `#${node.params[0].value.toFixed(0).padStart(3, "0")}`;
       case 0x80:
         return `${Math.round(100 * node.params[0].value / 65535)}%`;
       case 0x81:

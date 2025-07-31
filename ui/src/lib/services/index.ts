@@ -34,6 +34,7 @@ export const coreSimulationDmxData = coreService.simulationDmxData;
 export const coreSimulationState = coreService.simulationState;
 export const coreSimulationTick = coreService.simulationTick;
 export const coreSimulationOutputs = coreService.simulationOutputs;
+export const coreExternalTriggers = coreService.externalTriggers;
 export const coreReady = coreService.ready;
 
 export const editorNodes = editorService.nodes;

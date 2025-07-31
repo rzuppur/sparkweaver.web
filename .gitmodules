@@ -1,3 +1,3 @@
 [submodule "external/sparkweaver.core"]
 	path = external/sparkweaver.core
-	url = https://github.com/rzuppur/sparkweaver.core.git
+	url = git@github.com:rzuppur/sparkweaver.core.git

@@ -59,6 +59,9 @@ export class CoreService {
   private readonly _simulationOutputs = writable<Array<DmxOutput>>([]);
   public readonly simulationOutputs = readonly(this._simulationOutputs);
 
+  private readonly _externalTriggers = writable<Array<number>>([]);
+  public readonly externalTriggers = readonly(this._externalTriggers);
+
   private editorService!: EditorService;
   private uiService!: UiService;
 
@@ -85,7 +88,7 @@ export class CoreService {
 
   private parseNodeTypes(): void {
     if (!this.module) return;
-    const configs = this.module.getNodeConfigs();
+    using configs = this.module.getNodeConfigs();
     const nodeTypes: Array<NodeType> = [];
 
     for (let i = 0; i < configs.size(); i++) {
@@ -108,7 +111,6 @@ export class CoreService {
       }
     }
 
-    configs.delete();
     this._nodeTypes.set(nodeTypes);
   }
 
@@ -130,6 +132,13 @@ export class CoreService {
       this.uiService.alertError(result);
       this._simulationState.set(CoreSimulationState.ERROR);
     }
+
+    const externalTriggers: Array<number> = [];
+    using triggerIds = this.module.listExternalTriggers();
+    for (let i = 0; i < triggerIds.size(); i++) {
+      externalTriggers.push(triggerIds.get(i)!);
+    }
+    this._externalTriggers.set(externalTriggers);
   }
 
   private simulationLoop(): void {
@@ -178,5 +187,9 @@ export class CoreService {
     if (get(this.simulationState) === CoreSimulationState.PAUSED) {
       this._simulationState.set(CoreSimulationState.RUNNING);
     }
+  }
+
+  public triggerExternalTrigger(id: number): void {
+    this.module?.triggerExternalTrigger(id);
   }
 }
