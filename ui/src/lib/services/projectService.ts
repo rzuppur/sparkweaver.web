@@ -4,6 +4,9 @@ import type { RouterService } from "$lib/services/routerService";
 import { timestampNow, Uint8Vector } from "$lib/utils";
 import { nanoid } from "nanoid";
 import { derived, get, type Readable, readonly, writable } from "svelte/store";
+import type { UiService } from "./uiService";
+
+export type NodeLabels = { [key: number]: string };
 
 export interface Project {
   id: string;
@@ -11,6 +14,7 @@ export interface Project {
   tree: Uint8Vector;
   created: number;
   modified: number;
+  labels: NodeLabels;
 }
 
 export class ProjectService {
@@ -24,37 +28,40 @@ export class ProjectService {
 
   private editorService!: EditorService;
   private routerService!: RouterService;
+  private uiService!: UiService;
 
   public inject(
     editorService: EditorService,
     routerService: RouterService,
+    uiService: UiService,
   ): void {
     this.editorService = editorService;
     this.routerService = routerService;
+    this.uiService = uiService;
   }
 
   public init(): void {
-    this.loadProjectsFromStorage();
+    if (this.loadProjectsFromStorage()) {
+      // Store projects
+      this._projectsList.subscribe(projects => {
+        localStorage.setItem(this.PROJECTS_KEY, JSON.stringify(projects));
+      });
 
-    // Store projects
-    this._projectsList.subscribe(projects => {
-      localStorage.setItem(this.PROJECTS_KEY, JSON.stringify(projects));
-    });
-
-    // Prompt for unsaved changes
-    const beforeUnloadHandler = (event: Event) => {
-      event.preventDefault();
-    };
-    this.unsavedChanges.subscribe((unsaved) => {
-      if (unsaved) {
-        window.addEventListener("beforeunload", beforeUnloadHandler);
-      } else {
-        window.removeEventListener("beforeunload", beforeUnloadHandler);
-      }
-    });
+      // Prompt for unsaved changes
+      const beforeUnloadHandler = (event: Event) => {
+        event.preventDefault();
+      };
+      this.unsavedChanges.subscribe((unsaved) => {
+        if (unsaved) {
+          window.addEventListener("beforeunload", beforeUnloadHandler);
+        } else {
+          window.removeEventListener("beforeunload", beforeUnloadHandler);
+        }
+      });
+    }
   }
 
-  public loadProjectsFromStorage(): void {
+  public loadProjectsFromStorage(): boolean {
     try {
       let projects = JSON.parse(localStorage.getItem(this.PROJECTS_KEY) ?? "");
       projects = Array.isArray(projects) ? projects : [];
@@ -62,8 +69,10 @@ export class ProjectService {
       projects = projects.filter((p: Project | null) => !!p);
       projects = (projects as Array<Project>).toSorted((a, b) => b.modified - a.modified);
       this._projectsList.set(projects);
-    } catch {
-      this._projectsList.set([]);
+      return true;
+    } catch (e) {
+      this.uiService.alertError(`Projects file invalid: ${e}`);
+      return false;
     }
   }
 
@@ -71,20 +80,18 @@ export class ProjectService {
     // Unload project
     if (!id) {
       this._currentProject.set(undefined);
-      this.editorService.loadTree(new Uint8Vector([TREE_FORMAT_VERSION]));
+      this.editorService.loadTreeAndLabels(new Uint8Vector([TREE_FORMAT_VERSION]), {});
+      return;
     }
 
     // Load project
-    else {
-      const projects = get(this._projectsList);
-      const project = projects.find(p => p.id === id);
-      if (project) {
-        this._currentProject.set(project);
-        this.editorService.loadTree(project.tree);
-      } else if (projects.length > 0) {
-        this._currentProject.set(projects.at(0)!);
-        this.editorService.loadTree(get(this._currentProject)!.tree);
-      }
+    const projects = get(this._projectsList);
+    const project = projects.find(p => p.id === id);
+    if (project) {
+      this._currentProject.set(project);
+      this.editorService.loadTreeAndLabels(project.tree, project.labels && typeof project.labels === "object" ? project.labels : {});
+    } else {
+      this.loadProject(undefined);
     }
   }
 
@@ -97,13 +104,14 @@ export class ProjectService {
       "created" in storage && typeof storage.created === "number" && !Number.isNaN(storage.created) &&
       "modified" in storage && typeof storage.modified === "number" && !Number.isNaN(storage.modified)
     ) {
-      const project: Partial<Project> = {};
-      project.id = storage.id;
-      project.name = storage.name;
-      project.tree = Uint8Vector.fromString(storage.tree);
-      project.created = storage.created;
-      project.modified = storage.modified;
-      return project as Project;
+      return {
+        id: storage.id,
+        name: storage.name,
+        tree: Uint8Vector.fromString(storage.tree),
+        labels: "labels" in storage && storage.labels && typeof storage.labels === "object" ? storage.labels as NodeLabels : {},
+        created: storage.created,
+        modified: storage.modified,
+      };
     }
     return null;
   }
@@ -115,6 +123,7 @@ export class ProjectService {
       tree: new Uint8Vector([TREE_FORMAT_VERSION, 0x60, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x01, 0x00, 0xFE, 0x00, 0x00, 0x01, 0x00, 0xFC, 0x01, 0x00, 0x00, 0x00]),
       created: timestampNow(),
       modified: timestampNow(),
+      labels: {},
     };
   }
 
@@ -126,6 +135,14 @@ export class ProjectService {
     } : p));
   }
 
+  public updateLabels(labels: NodeLabels): void {
+    this._currentProject.update(p => (p ? {
+      ...p,
+      modified: timestampNow(),
+      labels,
+    } : p));
+  }
+
   public readonly unsavedChanges: Readable<boolean> = derived([this._currentProject, this._projectsList], ([$currentProject, $projectsList]) => {
     if (!$currentProject) return false;
     const original = $projectsList.find(p => p.id === $currentProject.id);
@@ -133,6 +150,7 @@ export class ProjectService {
     return !(
       original.name === $currentProject.name &&
       original.tree.toString() === $currentProject.tree.toString() &&
+      JSON.stringify(original.labels) === JSON.stringify($currentProject.labels) &&
       original.created === $currentProject.created
     );
   });
@@ -160,6 +178,7 @@ export class ProjectService {
       return JSON.stringify({
         name: current.name,
         tree: current.tree.toJSON(),
+        labels: current.labels,
       });
     }
     return "";
@@ -173,7 +192,7 @@ export class ProjectService {
       "name" in project && typeof project.name === "string" &&
       "tree" in project && typeof project.tree === "string") {
       this.setCurrentProjectName(project.name);
-      this.editorService.loadTree(Uint8Vector.fromString(project.tree));
+      this.editorService.loadTreeAndLabels(Uint8Vector.fromString(project.tree), project.labels && typeof project.labels === "object" ? project.labels : {});
     } else {
       throw new Error("Invalid project format");
     }

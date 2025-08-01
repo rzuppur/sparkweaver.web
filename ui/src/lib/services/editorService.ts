@@ -2,7 +2,7 @@ import { COMMAND_COLOR_INPUT, COMMAND_COLOR_OUTPUT, COMMAND_TRIGGER_INPUT, COMMA
 import { type AnchorType, Node } from "$lib/Node.svelte.js";
 import { NodeParam } from "$lib/NodeParam.svelte.js";
 import type { CoreService } from "$lib/services/coreService";
-import type { ProjectService } from "$lib/services/projectService";
+import type { NodeLabels, ProjectService } from "$lib/services/projectService";
 import type { UiService } from "$lib/services/uiService";
 import { Uint8Vector } from "$lib/utils";
 import { derived, get, readonly, writable } from "svelte/store";
@@ -35,6 +35,9 @@ export class EditorService {
   public init(): void {
     this.tree.subscribe(tree => {
       this.projectService.updateTree(tree);
+    });
+    this.labels.subscribe(labels => {
+      this.projectService.updateLabels(labels);
     });
   }
 
@@ -88,6 +91,16 @@ export class EditorService {
     return t;
   });
 
+  public readonly labels = derived([this.nodes, this.selected], ([$nodes]) => {
+    const labels: NodeLabels = {};
+    let i = 0;
+    for (const node of $nodes) {
+      if (node.label) labels[i] = node.label;
+      ++i;
+    }
+    return labels;
+  });
+
   private nodeFromType(typeId: number): Node | undefined {
     const nodeType = get(this.coreService.nodeTypes).find(type => type.type_id === typeId);
     if (nodeType) {
@@ -105,7 +118,7 @@ export class EditorService {
     }
   }
 
-  public loadTree(tree: Uint8Vector): void {
+  public loadTreeAndLabels(tree: Uint8Vector, labels: NodeLabels): void {
     if (this.coreReadyUnsubscribe) {
       this.coreReadyUnsubscribe();
       this.coreReadyUnsubscribe = undefined;
@@ -223,6 +236,16 @@ export class EditorService {
           }
         } catch (e) {
           this.uiService.alertError(`Tree error at position ${chrPos}: ${e}`);
+        }
+
+        for (const [key, label] of Object.entries(labels)) {
+          try {
+            const index = Number.parseInt(key, 10);
+            // noinspection SuspiciousTypeOfGuard
+            if (typeof label === "string" && label && index >= 0 && index < nodes.length) {
+              nodes[index].label = label;
+            }
+          } catch { /* empty */ }
         }
 
         this.reset();

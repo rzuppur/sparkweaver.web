@@ -45,6 +45,12 @@
 
 {#if $editorSelected}
   <div class="node-params">
+    <input
+      type="text"
+      placeholder="Label"
+      bind:value={$editorSelected.label}
+      maxlength="80"
+    >
     {#each $editorSelected.params as param, p_i (p_i)}
       <div class="param">
         <div class="param-name">{param.name}</div>

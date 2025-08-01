@@ -109,7 +109,7 @@
         {@const blue = $coreSimulationDmxData.at((address ?? 0) + 2)}
         <div class="color-preview" style:background-color={`rgb(${red ?? 0}, ${green ?? 0}, ${blue ?? 0})`}></div>
       {/if}
-      <div class="name">{node.name}</div>
+      <div class="name">{node.label || node.name}</div>
       {#if nodeSummary}
         <div class="summary">{nodeSummary}</div>
       {/if}

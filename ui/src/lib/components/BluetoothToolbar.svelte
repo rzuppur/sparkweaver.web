@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { bluetoothPwNeedsChanging, bluetoothService, bluetoothState, editorService, editorTree, uiService } from "$lib/services";
+  import { bluetoothPwNeedsChanging, bluetoothService, bluetoothState, editorService, editorTree, projectCurrent, uiService } from "$lib/services";
   import { BluetoothState, CHR_PW, CHR_TREE, readInChunks, writeInChunks } from "$lib/services/bluetoothService";
   import { Uint8Vector } from "$lib/utils";
   import { get } from "svelte/store";
@@ -32,7 +32,7 @@
     });
     if (data) {
       try {
-        editorService.loadTree(new Uint8Vector([...data]));
+        if ($projectCurrent) editorService.loadTreeAndLabels(new Uint8Vector([...data]), $projectCurrent.labels);
       } catch (e) {
         uiService.alertError(`${e}`);
       }

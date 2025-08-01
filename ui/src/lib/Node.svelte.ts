@@ -24,6 +24,8 @@ export class Node {
   private static nextUid = 0;
 
   public element?: HTMLElement = $state();
+  public label: string | undefined = $state(undefined);
+
   public readonly params: ReadonlyArray<NodeParam> = $state([]);
   public readonly nodeType: NodeType;
   public readonly uid: number;

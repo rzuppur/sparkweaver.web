@@ -15,7 +15,7 @@ export const uiService = new UiService();
 bluetoothService.inject(uiService);
 coreService.inject(editorService, uiService);
 editorService.inject(coreService, projectService, uiService);
-projectService.inject(editorService, routerService);
+projectService.inject(editorService, routerService, uiService);
 routerService.inject(projectService);
 uiService.inject();
 
