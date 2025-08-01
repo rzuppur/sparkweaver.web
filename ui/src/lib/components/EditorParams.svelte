@@ -5,7 +5,7 @@
   function duplicateNode(): void {
     setTimeout(() => {
       if ($editorSelected) {
-        editorService.addNode($editorSelected.clone());
+        editorService.duplicateNode($editorSelected);
       }
     }, 0); // Firefox sometimes sends double click events without the delay
   }

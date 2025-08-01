@@ -291,6 +291,15 @@ export class EditorService {
     this.selected.set(node);
   }
 
+  public duplicateNode(node: Node): void {
+    const newNode = node.clone();
+    this.updateNodes(nodes => {
+      const nodeIndex = nodes.indexOf(node) + 1;
+      return nodes.toSpliced(nodeIndex, 0, newNode);
+    });
+    this.selected.set(newNode);
+  }
+
   public addNewNode(typeId: number): Node | undefined {
     const newNode = this.nodeFromType(typeId);
     if (newNode) this.addNode(newNode);

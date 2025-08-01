@@ -60,7 +60,7 @@ export class Node {
         p.value = this.params[i].value;
         return p;
       });
-    return new Node(
+    const node = new Node(
       this.typeId,
       this.name,
       this.maxColorInputs,
@@ -69,6 +69,8 @@ export class Node {
       this.enableTriggerOutputs,
       params,
     );
+    if (this.label) node.label = this.label;
+    return node;
   }
 
   private getAnchorPositions(query: string): Array<AnchorPosition> {

@@ -15,6 +15,7 @@ export class NodeParam {
     if (!isUnsignedShort(defaultValue)) throw new Error("default_value is not u16");
     if (defaultValue < min || defaultValue > max) throw new Error("default_value is out of range");
     this._value = defaultValue;
+    this._valueBind = defaultValue;
   }
 
   public get valueBind(): number | null {
