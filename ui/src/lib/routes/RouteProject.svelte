@@ -7,7 +7,7 @@
   import { uiToolbarsVisible } from "$lib/services";
 </script>
 
-<main>
+<div class="project">
   <div class="toolbar-l">
     <ProjectToolbar></ProjectToolbar>
   </div>
@@ -31,14 +31,14 @@
       </div>
     {/if}
   </div>
-</main>
+</div>
 
 <style>
-  main {
+  .project {
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
-    height: 100dvh;
+    height: 100%;
     background: #333;
     gap: 2px;
 

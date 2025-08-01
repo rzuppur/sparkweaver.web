@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { projectCurrent, projectService, projectUnsaved, routerService, uiService, uiToolbarsVisible } from "$lib/services";
+  import { projectCurrent, projectService, projectUnsaved, uiService, uiToolbarsVisible } from "$lib/services";
 
   async function copyProject(): Promise<void> {
     try {
@@ -20,22 +20,30 @@
     }
   }
 
-  function toProjects(): void {
-    routerService.navigate({ path: "projects" });
+  let nameInputEl: HTMLInputElement;
+
+  function toggleBluetooth(): void {
+    setTimeout(() => {
+      uiService.setToolbar("bluetooth", !$uiToolbarsVisible.has("bluetooth"));
+    }, 0); // Firefox sometimes sends double click events without the delay
   }
 
-  let nameInputEl: HTMLInputElement;
+  function toggleSimulation(): void {
+    setTimeout(() => {
+      uiService.setToolbar("simulation", !$uiToolbarsVisible.has("simulation"));
+    }, 0); // Firefox sometimes sends double click events without the delay
+  }
+
+  function toggleDebug(): void {
+    setTimeout(() => {
+      uiService.setToolbar("debug", !$uiToolbarsVisible.has("debug"));
+    }, 0); // Firefox sometimes sends double click events without the delay
+  }
 </script>
 
 <div class="project-toolbar">
   {#if $projectCurrent}
     <div style="flex: 1 1 auto; display: flex; align-items: center; min-width: 0;">
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <button type="button" onclick={toProjects}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-          <path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/>
-        </svg>
-      </button>
       {#if $projectUnsaved}
         <div style="font-size: 30px; color: #a73; margin-right: 4px;">*</div>
       {/if}
@@ -77,19 +85,19 @@
   <div class="separator"></div>
   <div class="section-buttons">
     <!-- svelte-ignore a11y_consider_explicit_label -->
-    <button type="button" onclick={() => uiService.setToolbar("bluetooth", !$uiToolbarsVisible.has("bluetooth"))} class="button-toggle" class:active={$uiToolbarsVisible.has("bluetooth")} title="Bluetooth toolbar">
+    <button type="button" onclick={toggleBluetooth} class="button-toggle" class:active={$uiToolbarsVisible.has("bluetooth")} title="Bluetooth toolbar">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/>
       </svg>
     </button>
     <!-- svelte-ignore a11y_consider_explicit_label -->
-    <button type="button" onclick={() => uiService.setToolbar("simulation", !$uiToolbarsVisible.has("simulation"))} class="button-toggle" class:active={$uiToolbarsVisible.has("simulation")} title="Simulation toolbar">
+    <button type="button" onclick={toggleSimulation} class="button-toggle" class:active={$uiToolbarsVisible.has("simulation")} title="Simulation toolbar">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="M206-206q-41-48-63.5-107.5T120-440q0-150 105-255t255-105h8l-64-64 56-56 160 160-160 160-57-57 63-63h-6q-116 0-198 82t-82 198q0 51 16.5 96t46.5 81l-57 57Zm234-14q0-23-15.5-45.5t-34.5-47q-19-24.5-34.5-51T340-420q0-58 41-99t99-41q58 0 99 41t41 99q0 30-15.5 56.5t-34.5 51q-19 24.5-34.5 47T520-220h-80Zm0 100v-60h80v60h-80Zm314-86-57-57q30-36 46.5-81t16.5-96q0-66-27.5-122.5T657-657l57-57q58 50 92 120.5T840-440q0 67-22.5 126.5T754-206Z"/>
       </svg>
     </button>
     <!-- svelte-ignore a11y_consider_explicit_label -->
-    <button type="button" onclick={() => uiService.setToolbar("debug", !$uiToolbarsVisible.has("debug"))} class="button-toggle" class:active={$uiToolbarsVisible.has("debug")} title="Debug toolbar">
+    <button type="button" onclick={toggleDebug} class="button-toggle" class:active={$uiToolbarsVisible.has("debug")} title="Debug toolbar">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="m384-336 56-57-87-87 87-87-56-57-144 144 144 144Zm192 0 144-144-144-144-56 57 87 87-87 87 56 57ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/>
       </svg>

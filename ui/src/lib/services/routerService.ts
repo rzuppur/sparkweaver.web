@@ -2,7 +2,7 @@ import type { ProjectService } from "$lib/services/projectService";
 import { get, readonly, writable } from "svelte/store";
 
 interface AppRoute {
-  path: "projects" | "project";
+  path: "projects" | "project" | "remote";
   params?: { [key: string]: string };
 }
 

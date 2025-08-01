@@ -68,10 +68,14 @@ export class ProjectService {
   }
 
   public loadProject(id: string | undefined): void {
+    // Unload project
     if (!id) {
       this._currentProject.set(undefined);
       this.editorService.loadTree(new Uint8Vector([TREE_FORMAT_VERSION]));
-    } else {
+    }
+
+    // Load project
+    else {
       const projects = get(this._projectsList);
       const project = projects.find(p => p.id === id);
       if (project) {

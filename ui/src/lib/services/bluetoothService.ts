@@ -5,6 +5,7 @@ import { get, readonly, writable } from "svelte/store";
 const SVC_SW = "00001000-d8b4-4b1a-b585-d4931d8dc888";
 export const CHR_TREE = "00001001-d8b4-4b1a-b585-d4931d8dc888";
 export const CHR_PW = "00001002-d8b4-4b1a-b585-d4931d8dc888";
+export const CHR_TRIGGER = "00001003-d8b4-4b1a-b585-d4931d8dc888";
 const CHUNK_COUNT_MAX = 0xFF - 2;
 const CHUNK_FIRST_INDEX = 0x01;
 const CHUNK_TRANSMISSION_END = 0x00;

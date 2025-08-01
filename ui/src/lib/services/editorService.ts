@@ -2,7 +2,6 @@ import { COMMAND_COLOR_INPUT, COMMAND_COLOR_OUTPUT, COMMAND_TRIGGER_INPUT, COMMA
 import { type AnchorType, Node } from "$lib/Node.svelte.js";
 import { NodeParam } from "$lib/NodeParam.svelte.js";
 import type { CoreService } from "$lib/services/coreService";
-import { uiService } from "$lib/services/index";
 import type { ProjectService } from "$lib/services/projectService";
 import type { UiService } from "$lib/services/uiService";
 import { Uint8Vector } from "$lib/utils";
@@ -121,14 +120,22 @@ export class EditorService {
         let command = 0;
         let paramsLeft = 0;
         let paramLsb = 0;
+        const migrations = new Set<number>();
         let params: Array<number> = [];
         try {
           for (const byte of tree.get()) {
             // CHECK VERSION
             if (chrPos === 0) {
               if (byte !== TREE_FORMAT_VERSION) {
-                uiService.alertError("Tree version invalid");
-                break;
+                if (byte < TREE_FORMAT_VERSION) {
+                  for (let v = byte; v < TREE_FORMAT_VERSION; v++) {
+                    migrations.add(v);
+                  }
+                  this.uiService.alertInfo(`Running migrations: ${[...migrations].join(", ")}`);
+                } else if (byte > TREE_FORMAT_VERSION) {
+                  this.uiService.alertError("Tree version invalid");
+                  break;
+                }
               }
             }
 
@@ -149,7 +156,7 @@ export class EditorService {
                   command === COMMAND_COLOR_OUTPUT || command === COMMAND_TRIGGER_OUTPUT) {
                   const [from, to] = params;
                   if (from >= nodes.length || to >= nodes.length || from === to) {
-                    uiService.alertError(`Invalid connection at position ${chrPos}`);
+                    this.uiService.alertError(`Invalid connection at position ${chrPos}`);
                     break;
                   }
                   if (command === COMMAND_COLOR_INPUT) {
@@ -168,7 +175,7 @@ export class EditorService {
                   const newNode = this.nodeFromType(command);
                   if (newNode) {
                     for (let i = 0; i < newNode.params.length; i++) {
-                      newNode.params[i].value = params[i];
+                      if (params[i] !== undefined) newNode.params[i].value = params[i];
                     }
                     nodes.push(newNode);
                   }
@@ -198,11 +205,16 @@ export class EditorService {
                     nodes.push(newNode);
                   }
                 }
+
+                // MIGRATIONS
+                if (migrations.has(1) && config.type_id === 0x21) {
+                  paramsLeft = 3 * 2;
+                }
               }
 
               // INVALID
               else {
-                uiService.alertError(`Invalid command at position ${chrPos}: ${command}`);
+                this.uiService.alertError(`Invalid command at position ${chrPos}: ${command}`);
                 break;
               }
             }
@@ -210,7 +222,7 @@ export class EditorService {
             ++chrPos;
           }
         } catch (e) {
-          uiService.alertError(`Tree error at position ${chrPos}: ${e}`);
+          this.uiService.alertError(`Tree error at position ${chrPos}: ${e}`);
         }
 
         this.reset();
