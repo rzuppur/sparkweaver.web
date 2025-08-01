@@ -2,6 +2,7 @@ import { isUnsignedShort } from "$lib/utils";
 
 export class NodeParam {
   protected _value: number = $state(0);
+  protected _valueBind: number | null = $state(null);
 
   constructor(
     public readonly name: string,
@@ -16,6 +17,18 @@ export class NodeParam {
     this._value = defaultValue;
   }
 
+  public get valueBind(): number | null {
+    return this._valueBind;
+  }
+
+  public set valueBind(value: number | null | undefined) {
+    if (value === undefined || value === null) {
+      this._valueBind = null;
+      return;
+    }
+    this.value = value;
+  }
+
   public get value(): number {
     return this._value;
   };
@@ -24,5 +37,6 @@ export class NodeParam {
     if (!isUnsignedShort(value)) throw new Error("value is not u16");
     if (value < this.min || value > this.max) throw new Error("value is out of range");
     this._value = value;
+    this._valueBind = value;
   }
 }

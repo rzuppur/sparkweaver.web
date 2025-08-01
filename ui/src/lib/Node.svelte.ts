@@ -1,5 +1,7 @@
 import { NodeParam } from "$lib/NodeParam.svelte.js";
-import { editorService } from "$lib/services";
+import { coreService, editorService } from "$lib/services";
+import type { NodeType } from "$lib/services/coreService";
+import { get } from "svelte/store";
 
 type AnchorPosition = [x: number, y: number, w: number, h: number];
 
@@ -23,6 +25,7 @@ export class Node {
 
   public element?: HTMLElement = $state();
   public readonly params: ReadonlyArray<NodeParam> = $state([]);
+  public readonly nodeType: NodeType;
   public readonly uid: number;
 
   constructor(
@@ -36,6 +39,7 @@ export class Node {
   ) {
     this.uid = Node.nextUid++;
     this.params = params;
+    this.nodeType = get(coreService.nodeTypes).find(nt => nt.type_id === this.typeId)!;
     this.updateAnchorPositions();
   }
 

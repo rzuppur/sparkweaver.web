@@ -285,6 +285,16 @@ export class EditorService {
     this.updateNodes(nodes => nodes.filter(n => n.uid !== node.uid));
   }
 
+  public reorderNode(node: Node, delta: number): void {
+    this.updateNodes(nodes => {
+      const categoryNodes = nodes.filter(n => n.nodeType.category === node.nodeType.category);
+      const currentCategoryIndex = categoryNodes.indexOf(node);
+      const newCategoryIndex = Math.min(categoryNodes.length - 1, Math.max(currentCategoryIndex + delta, 0));
+      const newIndex = Math.min(nodes.length - 1, Math.max(0, nodes.indexOf(categoryNodes[newCategoryIndex])));
+      return nodes.filter(n => n !== node).toSpliced(newIndex, 0, node);
+    });
+  }
+
   selectFrom(node: Node, anchorType: AnchorType): void {
     this._selection.update(({ from, to, type }) => {
       // Deselect if already selected

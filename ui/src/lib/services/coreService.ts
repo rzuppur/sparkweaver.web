@@ -1,5 +1,4 @@
 import createModule, { type MainModule } from "$assets/core";
-import { TYPE_DS_RANGE } from "$lib/consts";
 import type { EditorService } from "$lib/services/editorService";
 import type { UiService } from "$lib/services/uiService";
 import { inRange, Uint8Vector } from "$lib/utils";
@@ -12,8 +11,11 @@ interface NodeParam {
   default_value: number;
 }
 
-interface NodeType {
+type NodeCategory = "SR" | "TR" | "FX" | "MX" | "DS" | "";
+
+export interface NodeType {
   type_id: number;
+  category: NodeCategory;
   name: string;
   params: Array<NodeParam>;
   max_color_inputs: number;
@@ -32,6 +34,15 @@ export enum CoreSimulationState {
 export interface DmxOutput {
   address: number;
   count: number;
+}
+
+function getCategory(type_id: number): NodeCategory {
+  if (inRange(type_id, [0x60, 0x7F])) return "SR";
+  if (inRange(type_id, [0x80, 0x9F])) return "TR";
+  if (inRange(type_id, [0x20, 0x3F])) return "FX";
+  if (inRange(type_id, [0x40, 0x5F])) return "MX";
+  if (inRange(type_id, [0x00, 0x1F])) return "DS";
+  return "";
 }
 
 export class CoreService {
@@ -104,6 +115,7 @@ export class CoreService {
         }
         nodeTypes.push({
           ...config,
+          category: getCategory(config.type_id),
           type_id: config.type_id,
           name: typeof config.name === "string" ? config.name : "",
           params,
@@ -111,7 +123,7 @@ export class CoreService {
       }
     }
 
-    this._nodeTypes.set(nodeTypes);
+    this._nodeTypes.set(nodeTypes.toSorted((a, b) => a.name.localeCompare(b.name)));
   }
 
   public buildTree(tree: Uint8Vector): void {
@@ -122,7 +134,7 @@ export class CoreService {
     }
     const result = this.module.build(vector);
     if (result === "OK") {
-      this._simulationOutputs.set(get(this.editorService.nodes).filter(n => inRange(n.typeId, TYPE_DS_RANGE)).map(n => {
+      this._simulationOutputs.set(get(this.editorService.nodes).filter(n => n.nodeType.category === "DS").map(n => {
         return { address: n.params[0].value, count: n.colorInputs.length };
       }));
       this.runSimulationTick();

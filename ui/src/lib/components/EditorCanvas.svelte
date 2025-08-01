@@ -1,8 +1,6 @@
 <script lang="ts">
   import EditorNode from "$lib/components/EditorNode.svelte";
-  import { TYPE_DS_RANGE, TYPE_FX_RANGE, TYPE_MX_RANGE, TYPE_SR_RANGE, TYPE_TR_RANGE } from "$lib/consts";
   import { coreNodeTypes, editorNodes, editorSelected, editorSelection, editorService } from "$lib/services";
-  import { inRange } from "$lib/utils.js";
   import { onMount } from "svelte";
 
   function addNode(typeId: number): void {
@@ -11,11 +9,11 @@
     }, 0); // Firefox sometimes sends double click events without the delay
   }
 
-  const sourceTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_SR_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
-  const triggerTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_TR_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
-  const effectTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_FX_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
-  const mixTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_MX_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
-  const destinationTypes = $derived($coreNodeTypes.filter(n => inRange(n.type_id, TYPE_DS_RANGE)).sort((a, b) => a.name.localeCompare(b.name)));
+  const sourceTypes = $derived($coreNodeTypes.filter(n => n.category === "SR"));
+  const triggerTypes = $derived($coreNodeTypes.filter(n => n.category === "TR"));
+  const effectTypes = $derived($coreNodeTypes.filter(n => n.category === "FX"));
+  const mixTypes = $derived($coreNodeTypes.filter(n => n.category === "MX"));
+  const destinationTypes = $derived($coreNodeTypes.filter(n => n.category === "DS"));
 
   let columnsEl = $state<HTMLElement>();
   let columnsWidth = $state(0);
@@ -38,11 +36,11 @@
     };
   });
 
-  const sourceNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_SR_RANGE)));
-  const triggerNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_TR_RANGE)));
-  const effectNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_FX_RANGE)));
-  const mixNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_MX_RANGE)));
-  const destinationNodes = $derived($editorNodes.filter(n => inRange(n.typeId, TYPE_DS_RANGE)));
+  const sourceNodes = $derived($editorNodes.filter(n => n.nodeType.category === "SR"));
+  const triggerNodes = $derived($editorNodes.filter(n => n.nodeType.category === "TR"));
+  const effectNodes = $derived($editorNodes.filter(n => n.nodeType.category === "FX"));
+  const mixNodes = $derived($editorNodes.filter(n => n.nodeType.category === "MX"));
+  const destinationNodes = $derived($editorNodes.filter(n => n.nodeType.category === "DS"));
 
   const lineOpacity = $derived($editorSelected ? 0.07 : 0.4);
   const selectedUid = $derived($editorSelected?.uid);
