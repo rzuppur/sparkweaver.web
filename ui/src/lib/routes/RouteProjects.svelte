@@ -7,6 +7,7 @@
     return () => {
       const id = projectService.newProject();
       projectService.setCurrentProjectName(`${project.name} (Copy)`);
+      projectService.updateLabels(project.labels);
       projectService.updateTree(project.tree);
       projectService.saveCurrentProject();
       projectService.loadProject(id);
