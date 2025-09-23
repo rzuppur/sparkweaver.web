@@ -53,7 +53,7 @@ export class RouterService {
     }
     if (route.path === "projects") {
       this.projectService.loadProject(undefined);
-      this.projectService.loadProjectsFromStorage();
+      this.projectService.loadOrInitializeProjects();
     }
     if (route.path === "project") {
       const id = route.params?.id;

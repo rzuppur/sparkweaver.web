@@ -41,39 +41,45 @@ export class ProjectService {
   }
 
   public init(): void {
-    if (this.loadProjectsFromStorage()) {
-      // Store projects
-      this._projectsList.subscribe(projects => {
-        localStorage.setItem(this.PROJECTS_KEY, JSON.stringify(projects));
-      });
+    this.loadOrInitializeProjects();
 
-      // Prompt for unsaved changes
-      const beforeUnloadHandler = (event: Event) => {
-        event.preventDefault();
-      };
-      this.unsavedChanges.subscribe((unsaved) => {
-        if (unsaved) {
-          window.addEventListener("beforeunload", beforeUnloadHandler);
-        } else {
-          window.removeEventListener("beforeunload", beforeUnloadHandler);
-        }
-      });
-    }
+    // Store projects subscriber
+    this._projectsList.subscribe(projects => {
+      localStorage.setItem(this.PROJECTS_KEY, JSON.stringify(projects));
+    });
+
+    // Prompt for unsaved changes
+    const beforeUnloadHandler = (event: Event) => {
+      event.preventDefault();
+    };
+    this.unsavedChanges.subscribe((unsaved) => {
+      if (unsaved) {
+        window.addEventListener("beforeunload", beforeUnloadHandler);
+      } else {
+        window.removeEventListener("beforeunload", beforeUnloadHandler);
+      }
+    });
   }
 
-  public loadProjectsFromStorage(): boolean {
-    try {
-      let projects = JSON.parse(localStorage.getItem(this.PROJECTS_KEY) ?? "");
-      projects = Array.isArray(projects) ? projects : [];
-      projects = projects.map((p: unknown) => ProjectService.projectFromStorage(p));
-      projects = projects.filter((p: Project | null) => !!p);
-      projects = (projects as Array<Project>).toSorted((a, b) => b.modified - a.modified);
-      this._projectsList.set(projects);
-      return true;
-    } catch (e) {
-      this.uiService.alertError(`Projects file invalid: ${e}`);
-      return false;
+  public loadOrInitializeProjects(): void {
+    // Try loading from storage
+    const projectsJson = localStorage.getItem(this.PROJECTS_KEY);
+    if (projectsJson) {
+      try {
+        let projects = JSON.parse(projectsJson);
+        projects = Array.isArray(projects) ? projects : [];
+        projects = projects.map((p: unknown) => ProjectService.projectFromStorage(p));
+        projects = projects.filter((p: Project | null) => !!p);
+        projects = (projects as Array<Project>).toSorted((a, b) => b.modified - a.modified);
+        this._projectsList.set(projects);
+        return; // Projects loaded
+      } catch (e) {
+        this.uiService.alertError(`Projects file invalid: ${e}`); // Fall through to default projects initialization
+      }
     }
+
+    // Initialize default projects
+    this._projectsList.set([]);
   }
 
   public loadProject(id: string | undefined): void {
