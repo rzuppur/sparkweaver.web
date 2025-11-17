@@ -1,32 +1,59 @@
 <script lang="ts">
-  import RouteProject from "$lib/routes/RouteProject.svelte";
-  import RouteProjects from "$lib/routes/RouteProjects.svelte";
-  import RouteRemote from "$lib/routes/RouteRemote.svelte";
-  import { currentRoute, projectService, routerService } from "$lib/services";
+  import { routeBus } from "$lib/bus/route.bus";
+  import RouteNotFound from "$lib/route/RouteNotFound.svelte";
+  import RouteProject from "$lib/route/RouteProject.svelte";
+  import RouteProjects from "$lib/route/RouteProjects.svelte";
+  import RouteRemote from "$lib/route/RouteRemote.svelte";
+  import { projectsService } from "$lib/service/projects.service";
+  import { editorStore } from "$lib/store/editor.store";
+  import { routeStore } from "$lib/store/route.store";
+
+  const editorProject = editorStore.project;
+
+  function newProject(): void {
+    const newProject = projectsService.createNewProject();
+    routeBus.navigate({ path: "project", params: { id: newProject.id } });
+  }
+
+  function navigateProjects(): void {
+    if ($routeStore?.path === "projects") return;
+    if ($routeStore?.path !== "project" && $editorProject) {
+      routeBus.navigate({ path: "project", params: { id: $editorProject.id } });
+    } else {
+      routeBus.navigate({ path: "projects" });
+    }
+  }
+
+  function navigateRemote(): void {
+    if ($routeStore?.path === "remote") return;
+    routeBus.navigate({ path: "remote" });
+  }
 </script>
 
 <div class="content">
   <div class="toolbar">
-    <button type="button" onclick={() => routerService.navigate({ path: "projects" })} class="toolbar-button" class:active={$currentRoute.path === "projects" || $currentRoute.path === "project"}>
+    <button class="toolbar-button" class:active={$routeStore?.path === "projects" || $routeStore?.path === "project"} onclick={navigateProjects} type="button">
       <span class="toolbar-label">Projects</span>
     </button>
-    <button type="button" onclick={() => routerService.navigate({ path: "remote" })} class="toolbar-button" class:active={$currentRoute.path === "remote"}>
+    <button class="toolbar-button" class:active={$routeStore?.path === "remote"} onclick={navigateRemote} type="button">
       <span class="toolbar-label">Remote</span>
     </button>
     <div style="flex: 1 1 auto;"></div>
-    <button type="button" onclick={() => projectService.newProject()} class="toolbar-button">
+    <button class="toolbar-button" onclick={newProject} type="button">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
       </svg>
       <span class="toolbar-label">New project</span>
     </button>
   </div>
-  {#if $currentRoute.path === "project"}
+  {#if $routeStore?.path === "project"}
     <RouteProject></RouteProject>
-  {:else if $currentRoute.path === "projects"}
+  {:else if $routeStore?.path === "projects"}
     <RouteProjects></RouteProjects>
-  {:else if $currentRoute.path === "remote"}
+  {:else if $routeStore?.path === "remote"}
     <RouteRemote></RouteRemote>
+  {:else if $routeStore?.path === "not-found"}
+    <RouteNotFound></RouteNotFound>
   {/if}
 </div>
 

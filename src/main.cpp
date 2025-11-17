@@ -15,10 +15,10 @@ struct NodeConfigBindable {
     std::vector<NodeParamBindable> params{};
     uint8_t                        type_id{};
     uint8_t                        params_count{};
-    uint8_t                        max_color_inputs{};
-    uint8_t                        max_trigger_inputs{};
-    bool                           enable_color_outputs{};
-    bool                           enable_trigger_outputs{};
+    uint8_t                        color_inputs_max{};
+    uint8_t                        trigger_inputs_max{};
+    bool                           color_outputs{};
+    bool                           trigger_outputs{};
 };
 
 static SparkWeaverCore::Engine engine;
@@ -26,17 +26,21 @@ static SparkWeaverCore::Engine engine;
 std::vector<NodeConfigBindable> getNodeConfigs()
 {
     std::vector<NodeConfigBindable> configs;
-    for (const auto& config : SparkWeaverCore::getNodeConfigs()) {
+    for (const auto& config : SparkWeaverCore::Engine::getNodeConfigs()) {
         std::vector<NodeParamBindable> params;
-        for (const auto& param : config.params) {
+        for (const auto& param : config->params) {
             params.push_back({std::string(param.name.data()), param.min, param.max, param.default_value});
         }
 
         configs.push_back(
-        {std::string(config.name.data()), std::move(params), config.type_id, config.params_count,
-         config.max_color_inputs, config.max_trigger_inputs,
-         config.enable_color_outputs == SparkWeaverCore::ColorOutputs::ENABLED,
-         config.enable_trigger_outputs == SparkWeaverCore::TriggerOutputs::ENABLED});
+        {
+            std::string(config->name.data()),
+            std::move(params),
+            config->type_id,
+            config->params_count,
+            config->color_inputs_max, config->trigger_inputs_max,
+            config->color_outputs == SparkWeaverCore::ColorOutputs::ENABLED,
+            config->trigger_outputs == SparkWeaverCore::TriggerOutputs::ENABLED});
     }
     return configs;
 }
@@ -48,6 +52,8 @@ std::string build(const std::vector<uint8_t>& tree)
         return "OK";
     } catch (const std::exception& e) {
         return e.what();
+    } catch (...) {
+        return "Unknown error";
     }
 }
 
@@ -81,10 +87,10 @@ EMSCRIPTEN_BINDINGS(node_config)
         .field("name", &NodeConfigBindable::name)
         .field("params", &NodeConfigBindable::params)
         .field("params_count", &NodeConfigBindable::params_count)
-        .field("max_color_inputs", &NodeConfigBindable::max_color_inputs)
-        .field("max_trigger_inputs", &NodeConfigBindable::max_trigger_inputs)
-        .field("enable_color_outputs", &NodeConfigBindable::enable_color_outputs)
-        .field("enable_trigger_outputs", &NodeConfigBindable::enable_trigger_outputs);
+        .field("color_inputs_max", &NodeConfigBindable::color_inputs_max)
+        .field("trigger_inputs_max", &NodeConfigBindable::trigger_inputs_max)
+        .field("color_outputs", &NodeConfigBindable::color_outputs)
+        .field("trigger_outputs", &NodeConfigBindable::trigger_outputs);
     emscripten::register_vector<NodeConfigBindable>("NodeConfigVector");
 
     emscripten::function("getNodeConfigs", &getNodeConfigs);
