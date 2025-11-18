@@ -56,9 +56,7 @@
 
   function selectNode(event: MouseEvent | KeyboardEvent): void {
     if ("key" in event && event.key !== "Enter") return;
-    setTimeout(() => {
-      editorService.selectNode(nodeId);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    editorService.selectNode(nodeId);
   }
 </script>
 

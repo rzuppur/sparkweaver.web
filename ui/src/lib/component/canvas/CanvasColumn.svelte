@@ -20,9 +20,7 @@
   const categoryNodes = $derived($editorNodes.filter(n => n.category === category));
 
   function addNode(typeId: number): void {
-    setTimeout(() => {
-      editorService.addNewNode(typeId);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    editorService.addNewNode(typeId);
   }
 </script>
 

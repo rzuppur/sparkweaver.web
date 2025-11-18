@@ -31,21 +31,15 @@
   }
 
   function toggleBluetooth(): void {
-    setTimeout(() => {
-      uiService.setToolbar("bluetooth", !$uiStore.has("bluetooth"));
-    }, 0); // Firefox sometimes sends double click events without the delay
+    uiService.setToolbar("bluetooth", !$uiStore.has("bluetooth"));
   }
 
   function toggleSimulation(): void {
-    setTimeout(() => {
-      uiService.setToolbar("simulation", !$uiStore.has("simulation"));
-    }, 0); // Firefox sometimes sends double click events without the delay
+    uiService.setToolbar("simulation", !$uiStore.has("simulation"));
   }
 
   function toggleDebug(): void {
-    setTimeout(() => {
-      uiService.setToolbar("debug", !$uiStore.has("debug"));
-    }, 0); // Firefox sometimes sends double click events without the delay
+    uiService.setToolbar("debug", !$uiStore.has("debug"));
   }
 </script>
 

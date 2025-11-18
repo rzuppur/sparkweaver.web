@@ -11,27 +11,19 @@
   let labelInputEl = $state<HTMLInputElement>();
 
   function duplicateNode(): void {
-    setTimeout(() => {
-      if (node) editorService.duplicateNode(node);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    if (node) editorService.duplicateNode(node);
   }
 
   function deleteNode(): void {
-    setTimeout(() => {
-      if (node) editorService.removeNode(node);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    if (node) editorService.removeNode(node);
   }
 
   function moveUp(): void {
-    setTimeout(() => {
-      if (node) editorService.reorderNode(node, -1);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    if (node) editorService.reorderNode(node, -1);
   }
 
   function moveDown(): void {
-    setTimeout(() => {
-      if (node) editorService.reorderNode(node, 1);
-    }, 0); // Firefox sometimes sends double click events without the delay
+    if (node) editorService.reorderNode(node, 1);
   }
 </script>
 
