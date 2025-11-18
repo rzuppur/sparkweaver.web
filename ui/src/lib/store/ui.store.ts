@@ -7,7 +7,7 @@ const toolbarsStore = writable<Set<UiToolbars>>(new Set(["bluetooth", "simulatio
  * @description Public store.
  */
 
-export const uiToolbars = {
+export const uiStore = {
   subscribe: toolbarsStore.subscribe,
 };
 
@@ -15,9 +15,9 @@ export const uiToolbars = {
  * @description Private methods only to be used by UiService.
  */
 
-export const uiToolbarsPrivate = Object.defineProperties({
-  ...uiToolbars,
+export const uiStorePrivate = Object.defineProperties({
+  ...uiStore,
 
   set: toolbarsStore.set,
   update: toolbarsStore.update,
-}, Object.getOwnPropertyDescriptors(uiToolbars));
+}, Object.getOwnPropertyDescriptors(uiStore));

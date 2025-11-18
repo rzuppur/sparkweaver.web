@@ -3,7 +3,7 @@
   import { editorService } from "$lib/service/editor.service";
   import { uiService } from "$lib/service/ui.service";
   import { editorStore } from "$lib/store/editor.store";
-  import { uiToolbars } from "$lib/store/ui.store";
+  import { uiStore } from "$lib/store/ui.store";
 
   const project = editorStore.project;
   const unsaved = editorStore.unsaved;
@@ -32,19 +32,19 @@
 
   function toggleBluetooth(): void {
     setTimeout(() => {
-      uiService.setToolbar("bluetooth", !$uiToolbars.has("bluetooth"));
+      uiService.setToolbar("bluetooth", !$uiStore.has("bluetooth"));
     }, 0); // Firefox sometimes sends double click events without the delay
   }
 
   function toggleSimulation(): void {
     setTimeout(() => {
-      uiService.setToolbar("simulation", !$uiToolbars.has("simulation"));
+      uiService.setToolbar("simulation", !$uiStore.has("simulation"));
     }, 0); // Firefox sometimes sends double click events without the delay
   }
 
   function toggleDebug(): void {
     setTimeout(() => {
-      uiService.setToolbar("debug", !$uiToolbars.has("debug"));
+      uiService.setToolbar("debug", !$uiStore.has("debug"));
     }, 0); // Firefox sometimes sends double click events without the delay
   }
 </script>
@@ -92,17 +92,17 @@
   {/if}
   <div class="separator"></div>
   <div class="section-buttons">
-    <button class="button-toggle" class:active={$uiToolbars.has("bluetooth")} onclick={toggleBluetooth} title="Bluetooth toolbar" type="button">
+    <button class="button-toggle" class:active={$uiStore.has("bluetooth")} onclick={toggleBluetooth} title="Bluetooth toolbar" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="M440-80v-304L256-200l-56-56 224-224-224-224 56-56 184 184v-304h40l228 228-172 172 172 172L480-80h-40Zm80-496 76-76-76-74v150Zm0 342 76-74-76-76v150Z"/>
       </svg>
     </button>
-    <button class="button-toggle" class:active={$uiToolbars.has("simulation")} onclick={toggleSimulation} title="Simulation toolbar" type="button">
+    <button class="button-toggle" class:active={$uiStore.has("simulation")} onclick={toggleSimulation} title="Simulation toolbar" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="M206-206q-41-48-63.5-107.5T120-440q0-150 105-255t255-105h8l-64-64 56-56 160 160-160 160-57-57 63-63h-6q-116 0-198 82t-82 198q0 51 16.5 96t46.5 81l-57 57Zm234-14q0-23-15.5-45.5t-34.5-47q-19-24.5-34.5-51T340-420q0-58 41-99t99-41q58 0 99 41t41 99q0 30-15.5 56.5t-34.5 51q-19 24.5-34.5 47T520-220h-80Zm0 100v-60h80v60h-80Zm314-86-57-57q30-36 46.5-81t16.5-96q0-66-27.5-122.5T657-657l57-57q58 50 92 120.5T840-440q0 67-22.5 126.5T754-206Z"/>
       </svg>
     </button>
-    <button class="button-toggle" class:active={$uiToolbars.has("debug")} onclick={toggleDebug} title="Debug toolbar" type="button">
+    <button class="button-toggle" class:active={$uiStore.has("debug")} onclick={toggleDebug} title="Debug toolbar" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
         <path d="m384-336 56-57-87-87 87-87-56-57-144 144 144 144Zm192 0 144-144-144-144-56 57 87 87-87 87 56 57ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/>
       </svg>

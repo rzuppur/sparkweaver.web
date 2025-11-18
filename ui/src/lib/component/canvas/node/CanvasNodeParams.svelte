@@ -8,7 +8,7 @@
 
   const node = $derived($activeId && $editorNodes.find(n => n.id === $activeId));
 
-  let labelInputEl: HTMLInputElement;
+  let labelInputEl = $state<HTMLInputElement>();
 
   function duplicateNode(): void {
     setTimeout(() => {

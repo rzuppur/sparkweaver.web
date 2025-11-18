@@ -4,7 +4,7 @@
   import DebugToolbar from "$lib/component/toolbar/DebugToolbar.svelte";
   import ProjectToolbar from "$lib/component/toolbar/ProjectToolbar.svelte";
   import SimulationToolbar from "$lib/component/toolbar/SimulationToolbar.svelte";
-  import { uiToolbars } from "$lib/store/ui.store";
+  import { uiStore } from "$lib/store/ui.store";
 </script>
 
 <div class="project">
@@ -12,12 +12,12 @@
     <ProjectToolbar></ProjectToolbar>
   </div>
   <div class="main">
-    {#if $uiToolbars.has("bluetooth")}
+    {#if $uiStore.has("bluetooth")}
       <div class="toolbar-m">
         <BluetoothToolbar></BluetoothToolbar>
       </div>
     {/if}
-    {#if $uiToolbars.has("simulation")}
+    {#if $uiStore.has("simulation")}
       <div class="toolbar-m">
         <SimulationToolbar></SimulationToolbar>
       </div>
@@ -25,7 +25,7 @@
     <div class="editor-canvas">
       <EditorCanvas></EditorCanvas>
     </div>
-    {#if $uiToolbars.has("debug")}
+    {#if $uiStore.has("debug")}
       <div class="toolbar-xl">
         <DebugToolbar></DebugToolbar>
       </div>

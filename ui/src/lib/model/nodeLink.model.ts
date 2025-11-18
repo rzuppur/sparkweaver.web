@@ -3,7 +3,10 @@ import { lsb, msb } from "$lib/util/data.util";
 import type { Uint8Vector } from "$lib/util/vector.util";
 
 abstract class NodeLink<T extends NodeLink<T>> {
-  constructor(
+  protected static nextId = 1;
+
+  protected constructor(
+    public readonly id: number, // Not serialized, used only to track links inside app
     public readonly outputId: number,
     public readonly inputId: number,
     public readonly outputIndex: number,
@@ -11,11 +14,11 @@ abstract class NodeLink<T extends NodeLink<T>> {
   ) {}
 
   public withOutputIndex(value: number): T {
-    return new this.Ctor(this.outputId, this.inputId, value, this.inputIndex);
+    return new this.Ctor(this.id, this.outputId, this.inputId, value, this.inputIndex);
   }
 
   public withInputIndex(value: number): T {
-    return new this.Ctor(this.outputId, this.inputId, this.outputIndex, value);
+    return new this.Ctor(this.id, this.outputId, this.inputId, this.outputIndex, value);
   }
 
   public serialize(target: Uint8Vector, nodes: Array<Node>): void {
@@ -31,11 +34,19 @@ abstract class NodeLink<T extends NodeLink<T>> {
 
   private get Ctor() {
     return this.constructor as {
-      new(outputId: number, inputId: number, outputIndex: number, inputIndex: number): T;
+      new(id: number, outputId: number, inputId: number, outputIndex: number, inputIndex: number): T;
     };
   }
 }
 
-export class NodeLinkColor extends NodeLink<NodeLinkColor> {}
+export class NodeLinkColor extends NodeLink<NodeLinkColor> {
+  public static createNew(outputId: number, inputId: number, outputIndex: number, inputIndex: number): NodeLinkColor {
+    return new NodeLinkColor(NodeLink.nextId++, outputId, inputId, outputIndex, inputIndex);
+  }
+}
 
-export class NodeLinkTrigger extends NodeLink<NodeLinkTrigger> {}
+export class NodeLinkTrigger extends NodeLink<NodeLinkTrigger> {
+  public static createNew(outputId: number, inputId: number, outputIndex: number, inputIndex: number): NodeLinkTrigger {
+    return new NodeLinkTrigger(NodeLink.nextId++, outputId, inputId, outputIndex, inputIndex);
+  }
+}

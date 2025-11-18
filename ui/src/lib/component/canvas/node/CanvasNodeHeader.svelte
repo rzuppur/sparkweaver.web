@@ -3,6 +3,7 @@
   import { editorService } from "$lib/service/editor.service";
   import { coreStore } from "$lib/store/core.store";
   import { editorStore } from "$lib/store/editor.store";
+  import { uiStore } from "$lib/store/ui.store";
   import { estimateTime } from "$lib/util/dmx.util";
 
   interface Props {
@@ -63,6 +64,9 @@
 
 {#if node}
   <div class="header" onclick={selectNode} onkeydown={selectNode} role="button" tabindex="0">
+    {#if $uiStore.has("debug")}
+      <code>{node.id}</code>
+    {/if}
     {#if node.config.typeId === coreConsts.TYPE_SR_COLOR}
       {@const red = node.params.find(p => p.config.name === "red")?.value}
       {@const green = node.params.find(p => p.config.name === "green")?.value}

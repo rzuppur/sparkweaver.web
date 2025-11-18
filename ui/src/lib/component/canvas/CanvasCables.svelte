@@ -18,6 +18,13 @@
 
   let { width, height }: Props = $props();
 
+  const CABLE_OPACITY_DEFAULT = 0.25;
+  const CABLE_OPACITY_SELECTED = 0.9;
+  const CABLE_OPACITY_DESELECTED = 0.07;
+  const CABLE_WIDTH_DEFAULT = 2;
+  const CABLE_WIDTH_SELECTED = 3;
+  const CABLE_WIDTH_DESELECTED = 1.5;
+
   const editorNodes = editorStore.nodes;
   const editorActiveId = editorStore.activeId;
   const editorColorLinks = editorStore.colorLinks;
@@ -51,8 +58,8 @@
             inAnchorEl.offsetLeft, inAnchorEl.offsetTop + inAnchorEl.offsetHeight / 2,
           ),
           color: getPathColor(outNode.category),
-          width: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? 4 : 2) : 3,
-          opacity: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? 0.9 : 0.07) : 0.3,
+          width: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? CABLE_WIDTH_SELECTED : CABLE_WIDTH_DESELECTED) : CABLE_WIDTH_DEFAULT,
+          opacity: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? CABLE_OPACITY_SELECTED : CABLE_OPACITY_DESELECTED) : CABLE_OPACITY_DEFAULT,
         });
       }
 
@@ -69,8 +76,8 @@
             inAnchorEl.offsetLeft, inAnchorEl.offsetTop + inAnchorEl.offsetHeight / 2,
           ),
           color: getPathColor(NodeCategory.TR),
-          width: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? 3 : 1.5) : 2,
-          opacity: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? 0.9 : 0.07) : 0.25,
+          width: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? CABLE_WIDTH_SELECTED : CABLE_WIDTH_DESELECTED) : CABLE_WIDTH_DEFAULT,
+          opacity: $editorActiveId ? (($editorActiveId === output.nodeId || $editorActiveId === input.nodeId) ? CABLE_OPACITY_SELECTED : CABLE_OPACITY_DESELECTED) : CABLE_OPACITY_DEFAULT,
         });
       }
     }

@@ -116,7 +116,8 @@
     }
 
     &.other-selected {
-      outline: 2px solid #fff8;
+      outline: 2px solid #fff4;
+      outline-offset: -2px;
     }
 
     &.hide {
@@ -132,7 +133,7 @@
         width: var(--s-sm);
         height: var(--s-sm);
         pointer-events: none;
-        margin: -7px 8px 3px;
+        margin: -7px 8px 5px;
       }
     }
 

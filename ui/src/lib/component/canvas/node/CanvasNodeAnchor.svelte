@@ -87,7 +87,9 @@
       opacity: 0.6;
       display: none;
       position: absolute;
-      top: 4px;
+      top: 5px;
+      line-height: 1;
+      text-shadow: 0 2px #111, 0 -2px #111, -2px 0 #111, 2px 0 #111;
 
       .input & {
         text-align: right;
@@ -107,24 +109,24 @@
     &.color {
       background: oklch(0.6 0 0);
 
-      &.connected {
-        background: oklch(0.4 0 0);
+      &.connected.active {
+        background: oklch(0.35 0 0);
+      }
 
-        &.highlight {
-          background: oklch(0.7 0 0);
-        }
+      &.highlight {
+        background: oklch(0.7 0 0);
       }
     }
 
     &.trigger {
       background: oklch(0.6 0.1 60);
 
-      &.connected {
-        background: oklch(0.4 0.1 60);
+      &.connected.active {
+        background: oklch(0.35 0.05 60);
+      }
 
-        &.highlight {
-          background: oklch(0.7 0.1 60);
-        }
+      &.highlight {
+        background: oklch(0.7 0.1 60);
       }
     }
 

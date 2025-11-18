@@ -163,6 +163,13 @@ class EditorService {
       for (const link of store.triggerLinksValue) link.serialize(tree, store.nodesValue);
     }
 
+    // Create labels
+    const labels: Project["labels"] = {};
+    for (let i = 0; i < store.nodesValue.length; i++) {
+      const node = store.nodesValue[i];
+      if (node.label) labels[i] = node.label;
+    }
+
     // Create new project, merge edited data into original
     const newProject = new Project(
       this.originalProject.id,
@@ -170,7 +177,7 @@ class EditorService {
       tree,
       this.originalProject.created,
       this.originalProject.modified,
-      store.projectValue?.labels ?? this.originalProject.labels,
+      labels,
     );
     store.setProject(newProject);
   }
@@ -316,15 +323,11 @@ class EditorService {
   public setNodeLabel(nodeId: number, value: string): void {
     if (!store.projectValue) return;
     value = value.trim();
-    const index = store.nodesValue.findIndex(n => n.id === nodeId);
-    if (index < 0) return;
     store.setNodes(store.nodesValue.map((n) => {
       if (n.id === nodeId) return n.withLabel(value);
       return n;
     }));
-    const labels = { ...store.projectValue.labels, [index]: value };
-    if (!value) delete labels[index];
-    this.setLabels(labels);
+    this.serializeToEditorProject();
   }
 
   public setNodeParameter(nodeId: number, index: number, value: number): void {
@@ -334,16 +337,6 @@ class EditorService {
       return n;
     }));
     this.serializeToEditorProject();
-  }
-
-  /**
-   * Replace current project labels
-   * @param value
-   */
-  private setLabels(value: Project["labels"]): void {
-    if (store.projectValue) {
-      store.setProject(store.projectValue.withLabels(value));
-    }
   }
 
   /**

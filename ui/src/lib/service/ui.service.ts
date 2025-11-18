@@ -1,7 +1,7 @@
 import { logBus } from "$lib/bus/log.bus";
 import { LogMessageType } from "$lib/model/log.model";
 import type { UiToolbars } from "$lib/model/ui.model";
-import { uiToolbarsPrivate as store } from "$lib/store/ui.store";
+import { uiStorePrivate as store } from "$lib/store/ui.store";
 
 class UiService {
   private readonly UI_TOOLBARS_KEY = "sw_toolbars";

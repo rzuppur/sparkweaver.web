@@ -9,6 +9,9 @@ export default defineConfig({
       plugins: [
         postcssPresetEnv({
           browsers: ">= 0.25%, not dead",
+          features: {
+            "is-pseudo-class": false,
+          },
         }),
       ],
     },

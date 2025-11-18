@@ -208,7 +208,7 @@ export class Project {
         if (command === 0xFC) { // Color input
           const existingOutputs = colorLinks.filter(l => l.outputId === nodeOutput.id);
           const existingInputs = colorLinks.filter(l => l.inputId === nodeInput.id);
-          colorLinks.push(new NodeLinkColor(nodeOutput.id, nodeInput.id, existingOutputs.length, existingInputs.length));
+          colorLinks.push(NodeLinkColor.createNew(nodeOutput.id, nodeInput.id, existingOutputs.length, existingInputs.length));
         } else if (command === 0xFD) { // Trigger input
           if (nodeOutput.config.typeId === coreConsts.TYPE_MX_ADD || nodeInput.config.typeId === coreConsts.TYPE_MX_ADD ||
             nodeOutput.config.typeId === coreConsts.TYPE_MX_SUBTRACT || nodeInput.config.typeId === coreConsts.TYPE_MX_SUBTRACT) {
@@ -216,7 +216,7 @@ export class Project {
           } else {
             const existingOutputs = triggerLinks.filter(l => l.outputId === nodeOutput.id);
             const existingInputs = triggerLinks.filter(l => l.inputId === nodeInput.id);
-            triggerLinks.push(new NodeLinkTrigger(nodeOutput.id, nodeInput.id, existingOutputs.length, existingInputs.length));
+            triggerLinks.push(NodeLinkTrigger.createNew(nodeOutput.id, nodeInput.id, existingOutputs.length, existingInputs.length));
           }
         } // Outputs are ignored, not 100% accurate migration
 
@@ -239,9 +239,9 @@ export class Project {
           const nodeOut = nodes[out_node_index];
           const nodeIn = nodes[in_node_index];
           if (command == coreConsts.COMMAND_COLOR_LINKS)
-            colorLinks.push(new NodeLinkColor(nodeOut.id, nodeIn.id, out_index, in_index));
+            colorLinks.push(NodeLinkColor.createNew(nodeOut.id, nodeIn.id, out_index, in_index));
           else
-            triggerLinks.push(new NodeLinkTrigger(nodeOut.id, nodeIn.id, out_index, in_index));
+            triggerLinks.push(NodeLinkTrigger.createNew(nodeOut.id, nodeIn.id, out_index, in_index));
         }
 
       } else {

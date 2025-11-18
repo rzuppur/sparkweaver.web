@@ -111,7 +111,7 @@ export const editorStorePrivate = Object.defineProperties({
     const existingInputs = colorLinksValue.filter(l => l.inputId === inputId);
     this.setColorLinks([
       ...colorLinksValue,
-      new NodeLinkColor(outputId, inputId, existingOutputs.length, existingInputs.length),
+      NodeLinkColor.createNew(outputId, inputId, existingOutputs.length, existingInputs.length),
     ]);
   },
 
@@ -120,7 +120,7 @@ export const editorStorePrivate = Object.defineProperties({
     const existingInputs = triggerLinksValue.filter(l => l.inputId === inputId);
     this.setTriggerLinks([
       ...triggerLinksValue,
-      new NodeLinkTrigger(outputId, inputId, existingOutputs.length, existingInputs.length),
+      NodeLinkTrigger.createNew(outputId, inputId, existingOutputs.length, existingInputs.length),
     ]);
   },
 
@@ -145,7 +145,7 @@ export const editorStorePrivate = Object.defineProperties({
 
   removeColorLink(value: NodeLinkColor): void {
     this.setColorLinks(colorLinksValue
-      .filter((link) => link !== value)
+      .filter((link) => link.id !== value.id)
       .map((link) => {
         if (link.outputId === value.outputId && link.outputIndex > value.outputIndex) {
           link = link.withOutputIndex(link.outputIndex - 1);
@@ -160,7 +160,7 @@ export const editorStorePrivate = Object.defineProperties({
 
   removeTriggerLink(value: NodeLinkTrigger): void {
     this.setTriggerLinks(triggerLinksValue
-      .filter((link) => link !== value)
+      .filter((link) => link.id !== value.id)
       .map((link) => {
         if (link.outputId === value.outputId && link.outputIndex > value.outputIndex) {
           link = link.withOutputIndex(link.outputIndex - 1);

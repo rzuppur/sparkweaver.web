@@ -130,7 +130,6 @@ class CoreService {
         const dataUpdate = store.dataValue;
         let ticksToRun = Math.ceil(-1 * timeLeftToTick / this.TARGET_TICK_LENGTH_MS);
         if (ticksToRun > 1) {
-          if (ticksToRun > 2) logBus.writeDebug(`core: simulationLoop behind ${ticksToRun - 1} ticks`);
           if (ticksToRun > this.MAXIMUM_CATCHUP_TICKS) this.nextTick = performance.now() - (this.MAXIMUM_CATCHUP_TICKS - 1) * this.TARGET_TICK_LENGTH_MS;
         }
         ticksToRun = clamp(1, ticksToRun, this.MAXIMUM_CATCHUP_TICKS);
